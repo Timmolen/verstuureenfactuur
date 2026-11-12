@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Factuur maken | Verstuur een factuur</title>
+<meta name="robots" content="noindex">
+<!-- Alles lokaal: geen externe scripts of verzoeken. Gegevens staan alleen in de browser van de gebruiker. Stijl en lettertype komen van de eigen site. -->
+<link rel="stylesheet" href="/assets/site.css">
+<style>
+:root{
+  --desk:#e4ebff; --lb:#e4ebff;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--desk);color:var(--ink);font:15px/1.45 var(--font);}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Menu: zelfde als de landingspagina, met de tabbladen van de tool erin */
+.app-nav .wrap{max-width:none;padding:0 28px}
+.app-nav .logo{margin-right:12px}
+.tabs{display:flex;gap:4px}
+.tabs button{border:0;background:none;padding:8px 13px;border-radius:8px;cursor:pointer;color:var(--muted);font-weight:500;white-space:nowrap}
+.tabs button:hover{background:var(--field);color:var(--ink)}
+.tabs button[aria-selected=true]{background:var(--lb);color:var(--accent);font-weight:600}
+.app-nav .local{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
+
+/* Melding op de telefoon */
+.mobile-note{display:none;margin:12px 16px 0;padding:12px 14px;border:1.5px solid #cfd9fb;background:#fff;border-radius:12px;font-size:14px;gap:12px;align-items:center}
+.mobile-note button{margin-left:auto;border:0;background:var(--accent);color:#fff;font-weight:600;border-radius:8px;padding:7px 12px;cursor:pointer}
+@media (max-width:720px){
+  .mobile-note:not([hidden]){display:flex}
+  .app-nav .wrap{flex-wrap:wrap;height:auto;padding:10px 16px;gap:8px}
+  .app-nav .tabs{order:3;width:100%;overflow-x:auto}
+  .app-nav .local{display:none}
+}
+
+/* Werkvlak */
+.work{display:grid;grid-template-columns:minmax(380px,520px) auto;justify-content:center;gap:40px;padding:28px;align-items:start}
+.panel{background:var(--panel);border-radius:12px;padding:22px;border:1px solid var(--line)}
+.panel h2{font-size:19px;margin:0 0 4px;letter-spacing:-.01em}
+.panel p.hint{margin:0 0 18px;color:var(--muted);font-size:14px}
+.panel h3{font-size:14px;margin:22px 0 10px;color:var(--muted);font-weight:600}
+.view[hidden]{display:none}
+
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:500}
+.f{margin-bottom:12px}
+.row{display:grid;gap:10px;grid-template-columns:1fr 1fr;align-items:end}
+.row3{display:grid;gap:10px;grid-template-columns:2fr 1fr;align-items:end}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:var(--field)}
+input:focus,select:focus,textarea:focus{background:#fff;border-color:var(--accent);outline:none}
+textarea{resize:vertical;min-height:40px}
+input[type=color]{padding:2px;height:38px}
+
+/* Factuurregels */
+.line{border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:8px;background:#fff}
+.line .nums{display:grid;grid-template-columns:1fr 1.15fr 1fr 1fr auto;gap:6px;margin-top:6px;align-items:end}
+.line .nums label{font-size:12px;margin-bottom:2px}
+.line .nums select,.line .nums input{padding:9px 6px}
+.del{border:0;background:none;color:var(--muted);cursor:pointer;padding:9px 6px;border-radius:6px}
+.del:hover{color:var(--warn);background:#fbeeeb}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:#fff;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn.quiet{border-color:transparent;color:var(--muted)}
+.btn.quiet:hover{color:var(--ink);border-color:var(--line)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+
+.sum{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.sum div{display:flex;justify-content:space-between;padding:2px 0;color:var(--muted)}
+.sum div.tot{color:var(--ink);font-weight:700;font-size:17px;padding-top:6px}
+
+.note{padding:12px 14px;border-radius:9px;background:#eef1fd;color:#1f2f8f;font-size:14px;margin-bottom:16px}
+.note.ok{background:#e8f4ee;color:#155c39}
+.note[hidden]{display:none}
+
+/* Lijsten */
+table.list{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px}
+table.list th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px 6px;border-bottom:1px solid var(--line)}
+table.list td{overflow-wrap:break-word;padding:9px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.list tr.sel td{background:#f1f3fd}
+table.list tr{cursor:pointer}
+table.list td.r,table.list th.r{text-align:right}
+table.list td.r,table.list td.n{white-space:nowrap;overflow-wrap:normal}
+.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#fbeeeb;color:var(--warn);font-weight:600;border:0;cursor:pointer}
+.pill.paid{background:#e8f4ee;color:var(--ok)}
+.empty{color:var(--muted);font-size:14px;padding:12px 0}
+
+/* Voorbeeld van het A4 */
+.stage{position:sticky;top:88px}
+.stage .cap{font-size:13px;color:var(--muted);margin:0 0 10px}
+.sheetwrap{overflow:auto}
+.sheet{zoom:.85}
+
+/* ===== De factuur zelf ===== */
+.inv{--c:var(--accent);width:210mm;min-height:297mm;background:#fff;padding:16mm 20mm 12mm;box-shadow:0 1px 2px rgba(20,30,50,.08),0 12px 40px rgba(20,30,50,.10);display:flex;flex-direction:column;font:10pt/1.5 var(--font);color:#15171a}
+.inv .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12mm}
+.inv .brand img{max-height:22mm;max-width:70mm;display:block}
+.inv .brand .name{font-size:15pt;font-weight:700;letter-spacing:-.01em}
+.inv .from{text-align:right;font-size:9pt;color:#5d636b;line-height:1.55}
+.inv .title{margin:12mm 0 0;display:flex;align-items:baseline;gap:5mm;border-bottom:2.5pt solid var(--c);padding-bottom:3mm}
+.inv .title .w{font-size:10pt;font-weight:600;color:var(--c)}
+.inv .title .nr{font-size:14pt;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.inv .title .ref{margin-left:auto;font-size:10pt;color:#5d636b}
+.inv .title .ref b{color:#15171a;font-weight:600;margin-left:1.5mm}
+.inv .meta{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:6mm;margin:6mm 0 8mm}
+.inv .meta .k{font-size:8pt;color:#5d636b;margin-bottom:1mm}
+.inv .meta .v{font-weight:600}
+.inv .meta .to .v{font-weight:400;line-height:1.5}
+.inv .meta .to .v b{font-weight:600}
+.inv table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.inv th{font-size:8pt;color:#5d636b;font-weight:600;text-align:left;padding:0 0 2mm;border-bottom:.6pt solid #c9ced4}
+.inv td{padding:2.4mm 0;border-bottom:.6pt solid #e3e6ea;vertical-align:top}
+.inv tr{break-inside:avoid}
+.inv .r{text-align:right}
+.inv td.d{padding-right:6mm;white-space:pre-line}
+.inv .totals{margin-left:auto;width:78mm;margin-top:4mm;break-inside:avoid;font-variant-numeric:tabular-nums}
+.inv .totals div{display:flex;justify-content:space-between;padding:1.2mm 0}
+.inv .totals .g{border-top:1.4pt solid #15171a;margin-top:2mm;padding-top:3mm;font-size:13pt;font-weight:700}
+.inv .memo{margin-top:6mm;white-space:pre-line}
+.inv .pay{margin-top:7mm;break-inside:avoid;padding:5mm 6mm;background:color-mix(in srgb,var(--c) 7%,#fff);border-left:2.5pt solid var(--c)}
+.inv .nw{white-space:nowrap}
+.inv .qr{margin:5mm 0 0;break-inside:avoid;break-before:avoid;width:110mm;display:flex;align-items:center;gap:5mm;font-size:8.5pt;line-height:1.45;color:#5d636b}
+.inv .qr figcaption{flex:1;border-left:1.4pt solid var(--c);padding-left:4mm}
+.inv .qr figcaption b{display:block;color:#15171a;font-size:9.5pt;margin-bottom:1mm}
+.inv .qr svg{width:26mm;height:26mm;display:block;flex:none}
+.inv .grow{flex:1}
+.inv .paygroup,.inv .endgroup{break-inside:avoid}
+.inv .terms{margin-top:6mm;break-inside:avoid;font-size:8pt;color:#5d636b;white-space:pre-line;max-width:140mm}
+.inv .foot{margin-top:6mm;break-inside:avoid;break-before:avoid;padding-top:3mm;border-top:.6pt solid #c9ced4;display:flex;flex-wrap:wrap;gap:2mm 8mm;font-size:8pt;color:#5d636b}
+.inv .foot b{color:#15171a;font-weight:600}
+.inv .ph{color:#b04a2e;background:#fdf1ec;border-radius:2px;padding:0 2px}
+
+@media (min-width:1600px){ .sheet{zoom:1} }
+@media (max-width:1320px){
+  .work{grid-template-columns:minmax(360px,1fr) auto;gap:24px}
+  .sheet{zoom:.7}
+}
+@media (max-width:980px){
+  .work{grid-template-columns:1fr;padding:16px}
+  .stage{position:static}
+  .sheet{zoom:.5}
+}
+
+@media print{
+  @page{size:A4;margin:0}   /* geen marge: dan zet de browser er geen eigen kop/voettekst in */
+  body{background:#fff}
+  .app-nav,.mobile-note,.site-foot,.panel,.stage .cap{display:none!important}
+  .work{display:block;padding:0}
+  .stage{position:static}
+  .sheet{zoom:1}
+  .inv{box-shadow:none;min-height:296mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}   /* clone: witruimte boven en onder op elke pagina */
+  .inv .ph{background:none}
+}
+</style>
+</head>
+<body>
+
+<header class="site-nav app-nav">
+  <div class="wrap">
+  <a class="logo" href="/">verstuur<span>een</span>factuur</a>
+  <nav class="tabs" role="tablist" aria-label="Onderdelen van de tool">
+    <button role="tab" data-tab="nieuw" aria-selected="true">Nieuwe factuur</button>
+    <button role="tab" data-tab="archief">Verstuurd</button>
+    <button role="tab" data-tab="klanten">Klanten</button>
+    <button role="tab" data-tab="ik">Mijn gegevens</button>
+  </nav>
+  <span class="local">Alleen in deze browser opgeslagen</span>
+  </div>
+</header>
+<div class="mobile-note" id="mobile-note" hidden><span>Dit werkt het best op een computer. Op een telefoon kan het ook, maar het is minder handig.</span><button type="button" id="mobile-ok">Oké</button></div>
+
+<main class="work">
+  <section>
+    <!-- Nieuwe factuur -->
+    <div class="panel view" id="v-nieuw">
+      <h2>Nieuwe factuur</h2>
+      <p class="hint">Vul de regels in. Nummer, BTW, vervaldatum en totaal gaan vanzelf.</p>
+      <div class="note" id="firstrun" hidden>Vul eerst je gegevens en een klant in. Daarna staan ze er elke maand al.</div>
+
+      <div class="f">
+        <label for="d-klant">Klant</label>
+        <select id="d-klant"></select>
+      </div>
+      <div class="row">
+        <div class="f"><label for="d-datum">Factuurdatum</label><input id="d-datum" type="date"></div>
+        <div class="f"><label for="d-periode">Periode</label><input id="d-periode" placeholder="oktober 2026"></div>
+      </div>
+      <div class="f"><label for="d-ref">Referentie van de klant</label><input id="d-ref" placeholder="Niet verplicht, bijvoorbeeld een inkoopnummer of projectcode"></div>
+
+      <h3>Regels</h3>
+      <div id="lines"></div>
+      <div class="actions" style="margin-top:4px">
+        <button class="btn small" id="addline">Regel toevoegen</button>
+        <button class="btn small quiet" id="copylast">Regels van vorige factuur overnemen</button>
+      </div>
+
+      <h3>Opmerking op de factuur</h3>
+      <textarea id="d-notitie" rows="2" placeholder="Niet verplicht, bijvoorbeeld een korte toelichting"></textarea>
+
+      <div class="sum" id="sum"></div>
+
+      <div class="actions">
+        <button class="btn primary" id="finish">Opslaan en PDF maken</button>
+        <button class="btn quiet" id="reset">Leegmaken</button>
+      </div>
+    </div>
+
+    <!-- Archief -->
+    <div class="panel view" id="v-archief" hidden>
+      <h2>Verstuurd</h2>
+      <p class="hint">Klik op een factuur om hem te bekijken. Klik op het label om hem op betaald te zetten.</p>
+      <div class="note ok" id="saved" hidden></div>
+      <div id="archlist"></div>
+      <div class="actions" id="archactions" hidden>
+        <button class="btn primary" id="a-pdf">PDF opnieuw maken</button>
+        <button class="btn" id="a-mail">Mail opstellen</button>
+        <button class="btn quiet" id="a-copy">Kopiëren naar nieuwe factuur</button>
+        <button class="btn quiet" id="a-del" hidden>Laatste factuur verwijderen</button>
+      </div>
+    </div>
+
+    <!-- Klanten -->
+    <div class="panel view" id="v-klanten" hidden>
+      <h2>Klanten</h2>
+      <p class="hint">Eén keer invullen. Werk je per uur, dan staat het tarief al klaar. Bij een vast bedrag vul je elke maand alleen het bedrag in.</p>
+      <div id="klantlist"></div>
+      <h3 id="k-kop">Nieuwe klant</h3>
+      <form id="klantform" autocomplete="off">
+        <div class="f"><label for="k-naam">Bedrijfsnaam</label><input id="k-naam" required></div>
+        <div class="f"><label for="k-contact">T.a.v.</label><input id="k-contact" placeholder="Naam contactpersoon"></div>
+        <div class="f"><label for="k-adres">Adres</label><input id="k-adres"></div>
+        <div class="row">
+          <div class="f"><label for="k-postcode">Postcode</label><input id="k-postcode"></div>
+          <div class="f"><label for="k-plaats">Plaats</label><input id="k-plaats"></div>
+        </div>
+        <div class="f"><label for="k-email">E-mailadres voor facturen</label><input id="k-email" type="email"></div>
+        <div class="f"><label for="k-werkwijze">Werkwijze</label><select id="k-werkwijze"><option value="uur">Per uur</option><option value="vast">Vast bedrag per maand</option></select></div>
+        <div class="row">
+          <div class="f"><label for="k-tarief">Uurtarief excl. BTW</label><input id="k-tarief" inputmode="decimal" placeholder="85"></div>
+          <div class="f"><label for="k-btw">BTW nummer klant</label><input id="k-btw" placeholder="Niet verplicht"></div>
+        </div>
+        <div class="f"><label for="k-ref">Vaste referentie</label><input id="k-ref" placeholder="Niet verplicht, komt dan elke keer op de factuur"></div>
+        <div class="actions">
+          <button class="btn primary" type="submit" id="k-save">Klant opslaan</button>
+          <button class="btn quiet" type="button" id="k-cancel" hidden>Annuleren</button>
+          <button class="btn quiet" type="button" id="k-del" hidden>Klant verwijderen</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Mijn gegevens -->
+    <div class="panel view" id="v-ik" hidden>
+      <h2>Mijn gegevens</h2>
+      <p class="hint">Staat onderaan en bovenaan elke factuur. Wordt automatisch bewaard.</p>
+      <div class="f"><label for="m-bedrijf">Bedrijfsnaam</label><input id="m-bedrijf" data-me="bedrijf"></div>
+      <div class="f"><label for="m-naam">Je naam</label><input id="m-naam" data-me="naam"></div>
+      <div class="f"><label for="m-adres">Adres</label><input id="m-adres" data-me="adres"></div>
+      <div class="row">
+        <div class="f"><label for="m-postcode">Postcode</label><input id="m-postcode" data-me="postcode"></div>
+        <div class="f"><label for="m-plaats">Plaats</label><input id="m-plaats" data-me="plaats"></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="m-email">E-mail</label><input id="m-email" data-me="email"></div>
+        <div class="f"><label for="m-tel">Telefoon</label><input id="m-tel" data-me="tel"></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="m-kvk">KvK nummer</label><input id="m-kvk" data-me="kvk"></div>
+        <div class="f"><label for="m-btw">BTW nummer</label><input id="m-btw" data-me="btw" placeholder="NL000000000B01"></div>
+      </div>
+      <div class="row3">
+        <div class="f"><label for="m-iban">IBAN</label><input id="m-iban" data-me="iban"></div>
+        <div class="f"><label for="m-tnv">T.n.v.</label><input id="m-tnv" data-me="tnv"></div>
+      </div>
+
+      <h3>Factuurnummer</h3>
+      <div class="row">
+        <div class="f"><label for="m-prefix">Begint met (letters en punten mogen)</label><input id="m-prefix" data-me="prefix" placeholder="2026.D"></div>
+        <div class="f"><label for="m-volgnr">Volgende nummer</label><input id="m-volgnr" data-me="volgnr" inputmode="numeric"></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="m-cijfers">Aantal cijfers</label><input id="m-cijfers" data-me="cijfers" inputmode="numeric"></div>
+        <div class="f"><label for="m-termijn">Betaaltermijn in dagen</label><input id="m-termijn" data-me="termijn" inputmode="numeric"></div>
+      </div>
+      <p class="hint" id="nrvoorbeeld" style="margin-top:-4px"></p>
+
+      <div class="f"><label for="m-voorwaarden">Tekst over voorwaarden onderaan de factuur</label><textarea id="m-voorwaarden" data-me="voorwaarden" rows="2" placeholder="Niet verplicht, bijvoorbeeld: Op al mijn diensten zijn mijn algemene voorwaarden van toepassing."></textarea></div>
+
+      <h3>Mailen</h3>
+      <div class="row">
+        <div class="f"><label for="m-mailvia">Mailen via</label><select id="m-mailvia" data-me="mailvia"><option value="app">Mailprogramma op je computer</option><option value="gmail">Gmail in de browser</option></select></div>
+        <div class="f"><label for="m-gmail">Google account</label><input id="m-gmail" data-me="gmail" placeholder="Hoofdadres, geen alias"></div>
+      </div>
+      <div class="f"><label for="m-mailonderwerp">Onderwerp van de mail</label><input id="m-mailonderwerp" data-me="mailonderwerp"></div>
+      <div class="f"><label for="m-mailtekst">Tekst van de mail</label><textarea id="m-mailtekst" data-me="mailtekst" rows="7"></textarea></div>
+      <p class="hint" style="margin-top:-4px">Deze woorden vult de tool zelf in: {nummer} {periode} {totaal} {vervaldatum} {klant} {contact} {referentie} {bedrijf} {naam}</p>
+      <button class="btn small quiet" id="m-mailreset" style="margin-bottom:12px">Standaardtekst terugzetten</button>
+      <div class="f"><label for="m-boekhoud">Kopie naar (BCC), bijvoorbeeld het inboxadres van je boekhouding</label><input id="m-boekhoud" data-me="boekhoud" type="email" placeholder="Niet verplicht"></div>
+
+      <div class="f"><label for="m-qr">QR code om te betalen op de factuur</label><select id="m-qr" data-me="qr"><option value="ja">Ja</option><option value="nee">Nee</option></select></div>
+
+      <h3>Uiterlijk</h3>
+      <div class="row">
+        <div class="f"><label for="m-logo">Logo</label><input id="m-logo" type="file" accept="image/*"></div>
+        <div class="f"><label for="m-kleur">Kleur</label><input id="m-kleur" data-me="kleur" type="color"></div>
+      </div>
+      <button class="btn small quiet" id="m-logodel">Logo weghalen</button>
+
+      <h3>Back-up</h3>
+      <p class="hint">Je gegevens staan in deze browser. Maak af en toe een back-up, bijvoorbeeld naar je iCloud map.</p>
+      <div class="actions" style="margin-top:0">
+        <button class="btn" id="b-export">Back-up downloaden</button>
+        <label class="btn" style="margin:0;color:var(--ink)">Back-up terugzetten<input id="b-import" type="file" accept="application/json" hidden></label>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage">
+    <p class="cap" id="cap">Voorbeeld. Zo ziet de PDF eruit.</p>
+    <div class="sheetwrap"><div class="sheet" id="sheet"></div></div>
+  </section>
+</main>
+
+<script>
+/* qrcode-generator 1.4.4, Kazuhiko Arase, MIT licentie. Inline opgenomen: geen externe verzoeken. */
+var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(l=4*u+17),e(0,0),e(l-7,0),e(0,l-7),i(),o(),v(t,r),7<=u&&h(t),null==n&&(n=w(u,f,c)),d(n,r)}var u=t,f=y[r],g=null,l=0,n=null,c=[],s={},e=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||l<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||l<=r+n||(g[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},o=function(){for(var t=8;t<l-8;t+=1)null==g[t][6]&&(g[t][6]=t%2==0);for(var r=8;r<l-8;r+=1)null==g[6][r]&&(g[6][r]=r%2==0)},i=function(){for(var t=B.getPatternPosition(u),r=0;r<t.length;r+=1)for(var e=0;e<t.length;e+=1){var n=t[r],o=t[e];if(null==g[n][o])for(var i=-2;i<=2;i+=1)for(var a=-2;a<=2;a+=1)g[n+i][o+a]=-2==i||2==i||-2==a||2==a||0==i&&0==a}},h=function(t){for(var r=B.getBCHTypeNumber(u),e=0;e<18;e+=1){var n=!t&&1==(r>>e&1);g[Math.floor(e/3)][e%3+l-8-3]=n}for(e=0;e<18;e+=1){n=!t&&1==(r>>e&1);g[e%3+l-8-3][Math.floor(e/3)]=n}},v=function(t,r){for(var e=f<<3|r,n=B.getBCHTypeInfo(e),o=0;o<15;o+=1){var i=!t&&1==(n>>o&1);o<6?g[o][8]=i:o<8?g[o+1][8]=i:g[l-15+o][8]=i}for(o=0;o<15;o+=1){i=!t&&1==(n>>o&1);o<8?g[8][l-o-1]=i:o<9?g[8][15-o-1+1]=i:g[8][15-o-1]=i}g[l-8][8]=!t},d=function(t,r){for(var e=-1,n=l-1,o=7,i=0,a=B.getMaskFunction(r),u=l-1;0<u;u-=2)for(6==u&&(u-=1);;){for(var f=0;f<2;f+=1)if(null==g[n][u-f]){var c=!1;i<t.length&&(c=1==(t[i]>>>o&1)),a(n,u-f)&&(c=!c),g[n][u-f]=c,-1==(o-=1)&&(i+=1,o=7)}if((n+=e)<0||l<=n){n-=e,e=-e;break}}},w=function(t,r,e){for(var n=b.getRSBlocks(t,r),o=M(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=C(i[u],l.getLength()-1).mod(l);a[u]=new Array(l.getLength()-1);for(g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=0<=s?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};s.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=x(t);break;case"Alphanumeric":e=m(t);break;case"Byte":e=L(t);break;case"Kanji":e=D(t);break;default:throw"mode:"+r}c.push(e),n=null},s.isDark=function(t,r){if(t<0||l<=t||r<0||l<=r)throw t+","+r;return g[t][r]},s.getModuleCount=function(){return l},s.make=function(){if(u<1){for(var t=1;t<40;t++){for(var r=b.getRSBlocks(t,f),e=M(),n=0;n<c.length;n++){var o=c[n];e.put(o.getMode(),4),e.put(o.getLength(),B.getLengthInBits(o.getMode(),t)),o.write(e)}var i=0;for(n=0;n<r.length;n++)i+=r[n].dataCount;if(e.getLengthInBits()<=8*i)break}u=t}a(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){a(!0,e);var n=B.getLostPoint(s);(0==e||n<t)&&(t=n,r=e)}return r}())},s.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<s.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<s.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=s.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},s.createSvgTag=function(t,r,e,n){var o={};"object"==typeof t&&(t=(o=t).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,f,c=s.getModuleCount()*t+2*r,g="";for(f="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",g+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',g+=o.scalable?"":' width="'+c+'px" height="'+c+'px"',g+=' viewBox="0 0 '+c+" "+c+'" ',g+=' preserveAspectRatio="xMinYMin meet"',g+=n.text||e.text?' role="img" aria-labelledby="'+p([n.id,e.id].join(" ").trim())+'"':"",g+=">",g+=n.text?'<title id="'+p(n.id)+'">'+p(n.text)+"</title>":"",g+=e.text?'<description id="'+p(e.id)+'">'+p(e.text)+"</description>":"",g+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',g+='<path d="',a=0;a<s.getModuleCount();a+=1)for(u=a*t+r,i=0;i<s.getModuleCount();i+=1)s.isDark(a,i)&&(g+="M"+(i*t+r)+","+u+f);return g+='" stroke="transparent" fill="black"/>',g+="</svg>"},s.createDataURL=function(o,t){o=o||2,t=void 0===t?4*o:t;var r=s.getModuleCount()*o+2*t,i=t,a=r-t;return I(r,r,function(t,r){if(i<=t&&t<a&&i<=r&&r<a){var e=Math.floor((t-i)/o),n=Math.floor((r-i)/o);return s.isDark(n,e)?0:1}return 1})},s.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=s.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=s.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=p(e),o+='"'),o+="/>"};var p=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return s.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*s.getModuleCount()+2*t,u=t,f=a-t,c={"██":"█","█ ":"▀"," █":"▄","  ":" "},g={"██":"▀","█ ":"▀"," █":" ","  ":" "},l="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<f&&u<=r&&r<f&&s.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<f&&u<=r+1&&r+1<f&&s.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",l+=t<1&&f<=r+1?g[i]:c[i];l+="\n"}return a%2&&0<t?l.substring(0,l.length-a-1)+Array(1+a).join("▀"):l.substring(0,l.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=s.getModuleCount()*t+2*r,u=r,f=a-r,c=Array(t+1).join("██"),g=Array(t+1).join("  "),l="",h="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),h="",n=0;n<a;n+=1)i=1,u<=n&&n<f&&u<=e&&e<f&&s.isDark(o,Math.floor((n-u)/t))&&(i=0),h+=i?c:g;for(o=0;o<t;o+=1)l+=h+"\n"}return l.substring(0,l.length-1)},s.renderTo2dContext=function(t,r){r=r||2;for(var e=s.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=s.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},s}i.stringToBytes=(i.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,i.createStringToBytes=function(u,f){var i=function(){function t(){var t=r.read();if(-1==t)throw"eof";return t}for(var r=S(u),e=0,n={};;){var o=r.read();if(-1==o)break;var i=t(),a=t()<<8|t();n[String.fromCharCode(o<<8|i)]=a,e+=1}if(e!=f)throw e+" != "+f;return n}(),a="?".charCodeAt(0);return function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);if(n<128)r.push(n);else{var o=i[t.charAt(e)];"number"==typeof o?(255&o)==o?r.push(o):(r.push(o>>>8),r.push(255&o)):r.push(a)}}return r}};var r,t,a=1,u=2,o=4,f=8,y={L:1,M:0,Q:3,H:2},e=0,n=1,c=2,g=3,l=4,h=5,s=6,v=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],(t={}).getBCHTypeInfo=function(t){for(var r=t<<10;0<=d(r)-d(1335);)r^=1335<<d(r)-d(1335);return 21522^(t<<10|r)},t.getBCHTypeNumber=function(t){for(var r=t<<12;0<=d(r)-d(7973);)r^=7973<<d(r)-d(7973);return t<<12|r},t.getPatternPosition=function(t){return r[t-1]},t.getMaskFunction=function(t){switch(t){case e:return function(t,r){return(t+r)%2==0};case n:return function(t,r){return t%2==0};case c:return function(t,r){return r%3==0};case g:return function(t,r){return(t+r)%3==0};case l:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case h:return function(t,r){return t*r%2+t*r%3==0};case s:return function(t,r){return(t*r%2+t*r%3)%2==0};case v:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},t.getErrorCorrectPolynomial=function(t){for(var r=C([1],0),e=0;e<t;e+=1)r=r.multiply(C([1,w.gexp(e)],0));return r},t.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case o:case f:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case o:return 16;case f:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case o:return 16;case f:return 12;default:throw"mode:"+t}}},t.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);5<i&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},t);function d(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r}var w=function(){for(var r=new Array(256),e=new Array(256),t=0;t<8;t+=1)r[t]=1<<t;for(t=8;t<256;t+=1)r[t]=r[t-4]^r[t-5]^r[t-6]^r[t-8];for(t=0;t<255;t+=1)e[r[t]]=t;var n={glog:function(t){if(t<1)throw"glog("+t+")";return e[t]},gexp:function(t){for(;t<0;)t+=255;for(;256<=t;)t-=255;return r[t]}};return n}();function C(n,o){if(void 0===n.length)throw n.length+"/"+o;var r=function(){for(var t=0;t<n.length&&0==n[t];)t+=1;for(var r=new Array(n.length-t+o),e=0;e<n.length-t;e+=1)r[e]=n[e+t];return r}(),i={getAt:function(t){return r[t]},getLength:function(){return r.length},multiply:function(t){for(var r=new Array(i.getLength()+t.getLength()-1),e=0;e<i.getLength();e+=1)for(var n=0;n<t.getLength();n+=1)r[e+n]^=w.gexp(w.glog(i.getAt(e))+w.glog(t.getAt(n)));return C(r,0)},mod:function(t){if(i.getLength()-t.getLength()<0)return i;for(var r=w.glog(i.getAt(0))-w.glog(t.getAt(0)),e=new Array(i.getLength()),n=0;n<i.getLength();n+=1)e[n]=i.getAt(n);for(n=0;n<t.getLength();n+=1)e[n]^=w.gexp(w.glog(t.getAt(n))+r);return C(e,0).mod(t)}};return i}function p(){var e=[],o={writeByte:function(t){e.push(255&t)},writeShort:function(t){o.writeByte(t),o.writeByte(t>>>8)},writeBytes:function(t,r,e){r=r||0,e=e||t.length;for(var n=0;n<e;n+=1)o.writeByte(t[n+r])},writeString:function(t){for(var r=0;r<t.length;r+=1)o.writeByte(t.charCodeAt(r))},toByteArray:function(){return e},toString:function(){var t="";t+="[";for(var r=0;r<e.length;r+=1)0<r&&(t+=","),t+=e[r];return t+="]"}};return o}var k,A,b=(k=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],(A={}).getRSBlocks=function(t,r){var e=function(t,r){switch(r){case y.L:return k[4*(t-1)+0];case y.M:return k[4*(t-1)+1];case y.Q:return k[4*(t-1)+2];case y.H:return k[4*(t-1)+3];default:return}}(t,r);if(void 0===e)throw"bad rs block @ typeNumber:"+t+"/errorCorrectionLevel:"+r;for(var n,o,i=e.length/3,a=[],u=0;u<i;u+=1)for(var f=e[3*u+0],c=e[3*u+1],g=e[3*u+2],l=0;l<f;l+=1)a.push((n=g,o=void 0,(o={}).totalCount=c,o.dataCount=n,o));return a},A),M=function(){var e=[],n=0,o={getBuffer:function(){return e},getAt:function(t){var r=Math.floor(t/8);return 1==(e[r]>>>7-t%8&1)},put:function(t,r){for(var e=0;e<r;e+=1)o.putBit(1==(t>>>r-e-1&1))},getLengthInBits:function(){return n},putBit:function(t){var r=Math.floor(n/8);e.length<=r&&e.push(0),t&&(e[r]|=128>>>n%8),n+=1}};return o},x=function(t){var r=a,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+2<r.length;)t.put(o(r.substring(e,e+3)),10),e+=3;e<r.length&&(r.length-e==1?t.put(o(r.substring(e,e+1)),4):r.length-e==2&&t.put(o(r.substring(e,e+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return e},m=function(t){var r=u,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+1<r.length;)t.put(45*o(r.charAt(e))+o(r.charAt(e+1)),11),e+=2;e<r.length&&t.put(o(r.charAt(e)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return e},L=function(t){var r=o,e=i.stringToBytes(t),n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=0;r<e.length;r+=1)t.put(e[r],8)}};return n},D=function(t){var r=f,e=i.stringToBytesFuncs.SJIS;if(!e)throw"sjis not supported.";!function(){var t=e("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=e(t),n={getMode:function(){return r},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return n},S=function(t){var e=t,n=0,o=0,i=0,r={read:function(){for(;i<8;){if(n>=e.length){if(0==i)return-1;throw"unexpected end of file./"+i}var t=e.charAt(n);if(n+=1,"="==t)return i=0,-1;t.match(/^\s$/)||(o=o<<6|a(t.charCodeAt(0)),i+=6)}var r=o>>>i-8&255;return i-=8,r}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return r},I=function(t,r,e){for(var n=function(t,r){var n=t,o=r,l=new Array(t*r),e={setPixel:function(t,r,e){l[r*n+t]=e},write:function(t){t.writeString("GIF87a"),t.writeShort(n),t.writeShort(o),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(n),t.writeShort(o),t.writeByte(0);var r=i(2);t.writeByte(2);for(var e=0;255<r.length-e;)t.writeByte(255),t.writeBytes(r,e,255),e+=255;t.writeByte(r.length-e),t.writeBytes(r,e,r.length-e),t.writeByte(0),t.writeString(";")}},i=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,o=h(),i=0;i<r;i+=1)o.add(String.fromCharCode(i));o.add(String.fromCharCode(r)),o.add(String.fromCharCode(e));var a=p(),u=function(t){var e=t,n=0,o=0,r={write:function(t,r){if(t>>>r!=0)throw"length over";for(;8<=n+r;)e.writeByte(255&(t<<n|o)),r-=8-n,t>>>=8-n,n=o=0;o|=t<<n,n+=r},flush:function(){0<n&&e.writeByte(o)}};return r}(a);u.write(r,n);var f=0,c=String.fromCharCode(l[f]);for(f+=1;f<l.length;){var g=String.fromCharCode(l[f]);f+=1,o.contains(c+g)?c+=g:(u.write(o.indexOf(c),n),o.size()<4095&&(o.size()==1<<n&&(n+=1),o.add(c+g)),c=g)}return u.write(o.indexOf(c),n),u.write(e,n),u.flush(),a.toByteArray()},h=function(){var r={},e=0,n={add:function(t){if(n.contains(t))throw"dup key:"+t;r[t]=e,e+=1},size:function(){return e},indexOf:function(t){return r[t]},contains:function(t){return void 0!==r[t]}};return n};return e}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=p();n.write(a);for(var u=function(){function e(t){a+=String.fromCharCode(r(63&t))}var n=0,o=0,i=0,a="",t={},r=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return t.writeByte=function(t){for(n=n<<8|255&t,o+=8,i+=1;6<=o;)e(n>>>o-6),o-=6},t.flush=function(){if(0<o&&(e(n<<6-o),o=n=0),i%3!=0)for(var t=3-i%3,r=0;r<t;r+=1)a+="="},t.toString=function(){return a},t}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return i}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||57344<=n?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
+</script>
+<footer class="site-foot">
+  <div class="wrap">
+    <a class="logo" href="/" style="margin:0;font-size:16px">verstuur<span>een</span>factuur</a>
+    <span class="spacer"></span>
+    <a href="mailto:contact@verstuureenfactuur.nl">contact@verstuureenfactuur.nl</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/voorwaarden">Voorwaarden</a>
+  </div>
+</footer>
+
+<script>
+const KEY = 'facturen.v1';
+const MAIL_ONDERWERP = 'Factuur {nummer} {bedrijf}';
+const MAIL_TEKST = `Geachte heer/mevrouw,
+
+Bedankt voor de samenwerking. In de bijlage vindt u de factuur met factuurnummer: {nummer}.
+Mochten er vragen of opmerkingen zijn dan verneem ik het graag.
+`;
+const DEF = {
+  me:{bedrijf:'',naam:'',adres:'',postcode:'',plaats:'',email:'',tel:'',kvk:'',btw:'',iban:'',tnv:'',
+      prefix:new Date().getFullYear()+'-',volgnr:1,cijfers:3,termijn:14,boekhoud:'',mailonderwerp:MAIL_ONDERWERP,mailtekst:MAIL_TEKST,mailvia:'app',gmail:'',qr:'ja',voorwaarden:'',logo:'',kleur:'#2b45d4'},
+  klanten:[], facturen:[], draft:null
+};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { const n = parseFloat(String(v ?? '').replace(/\s/g,'').replace(',','.')); return isNaN(n) ? 0 : n; };
+const r2 = n => Math.round(n*100)/100;
+const eur = n => new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(n);
+const nrf = n => new Intl.NumberFormat('nl-NL',{maximumFractionDigits:2}).format(n);
+const iso = d => new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const lang = s => s ? new Date(s+'T12:00').toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'}) : '';
+const maand = d => d.toLocaleDateString('nl-NL',{month:'long',year:'numeric'});
+const uid = () => Math.random().toString(36).slice(2,10);
+const vast = r => r.eenheid === 'vast';
+const qty = r => vast(r) ? 1 : num(r.aantal);
+const EENHEDEN = {uur:'uur', dag:'dag', stuk:'stuk', km:'km', vast:'vast'};
+
+let S = load();
+let view = null;          // gekozen factuur in archief
+let tab = 'nieuw';
+let editKlant = null;
+
+function load(){
+  try{
+    const r = JSON.parse(localStorage.getItem(KEY));
+    if (r) return {...structuredClone(DEF), ...r, me:{...DEF.me, ...r.me}};
+  }catch(e){}
+  return structuredClone(DEF);
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch(e){ if (!save.warned){ save.warned = true; alert('Opslaan lukt niet in deze browser. Open dit bestand in Safari of Chrome.'); } }
+}
+
+function nummer(n = S.me.volgnr){ return (S.me.prefix||'') + String(parseInt(n)||1).padStart(parseInt(S.me.cijfers)||1,'0'); }
+function addDays(s, d){ const x = new Date(s+'T12:00'); x.setDate(x.getDate()+(parseInt(d)||0)); return iso(x); }
+function klant(id){ return S.klanten.find(k => k.id === id); }
+
+/* EPC QR code (Europese standaard voor SEPA overboekingen): bankapp vult IBAN, naam, bedrag en omschrijving in */
+function epcQR(me, bedrag, nr){   // nr = omschrijving bij de overboeking
+  const iban = (me.iban||'').replace(/\s/g,'').toUpperCase();
+  if (me.qr === 'nee' || !iban || !(bedrag > 0)) return '';
+  const data = ['BCD','002','1','SCT','', (me.tnv||me.bedrijf||'').slice(0,70), iban, 'EUR'+bedrag.toFixed(2), '', '', (nr).slice(0,140)].join('\n');
+  qrcode.stringToBytes = t => Array.from(new TextEncoder().encode(t));
+  const q = qrcode(0,'M'); q.addData(data,'Byte'); q.make();
+  return q.createSvgTag({cellSize:2, margin:0, scalable:true});
+}
+
+function blankLine(){
+  const k = klant(S.draft?.klantId);
+  return k?.werkwijze === 'vast' ? {oms:'', aantal:'', eenheid:'vast', prijs:'', btw:21}
+                                 : {oms:'', aantal:'', eenheid:'uur', prijs:k?.tarief ?? '', btw:21};
+}
+function newDraft(){
+  const d = new Date();
+  return {klantId:S.klanten[0]?.id || '', datum:iso(d), periode:maand(d), ref:klant(S.klanten[0]?.id)?.ref || '', regels:[], notitie:''};
+}
+if (!S.draft){ S.draft = newDraft(); S.draft.regels = [blankLine()]; }
+
+function calc(regels){
+  let sub = 0; const per = {};
+  regels.forEach(r => { const b = r2(qty(r)*num(r.prijs)); sub += b; per[r.btw] = (per[r.btw]||0) + b; });
+  const btw = Object.entries(per).map(([p,g]) => ({p:+p, grond:r2(g), bedrag:r2(g*p/100)})).sort((a,b)=>b.p-a.p);
+  const totaal = r2(sub + btw.reduce((a,x)=>a+x.bedrag,0));
+  return {sub:r2(sub), btw, totaal};
+}
+
+/* Factuur uit concept opbouwen */
+function fromDraft(){
+  const d = S.draft;
+  return {nummer:nummer(), datum:d.datum, verval:addDays(d.datum,S.me.termijn), periode:d.periode, ref:d.ref || '',
+          klant:klant(d.klantId) || null, regels:d.regels, notitie:d.notitie, me:S.me};
+}
+
+/* ===== Render: de factuur ===== */
+function renderInvoice(inv){
+  const me = inv.me, k = inv.klant, t = calc(inv.regels);
+  const ph = (v, label) => v ? esc(v) : `<span class="ph">${label}</span>`;
+  const regels = inv.regels.filter(r => r.oms || num(r.aantal) || num(r.prijs));
+  const rows = regels.map(r => `<tr>
+      <td class="d">${esc(r.oms)}</td>
+      <td class="r">${vast(r) ? '' : nrf(num(r.aantal)) + ' ' + esc(r.eenheid)}</td>
+      <td class="r">${vast(r) ? '' : eur(num(r.prijs))}</td>
+      <td class="r">${r.btw}%</td>
+      <td class="r">${eur(r2(qty(r)*num(r.prijs)))}</td></tr>`).join('')
+    || `<tr><td class="d" colspan="5" style="color:#9aa0a6">Nog geen regels</td></tr>`;
+  const btwRows = t.btw.map(b => `<div><span>BTW ${b.p}% over ${eur(b.grond)}</span><span>${eur(b.bedrag)}</span></div>`).join('');
+  const to = k ? `<b>${esc(k.naam)}</b>${k.contact?'<br>t.a.v. '+esc(k.contact):''}<br>${esc(k.adres)}<br>${esc(k.postcode)} ${esc(k.plaats)}${k.btw?'<br>BTW '+esc(k.btw):''}`
+               : `<span class="ph">Kies een klant</span>`;
+  return `<article class="inv" style="--c:${esc(me.kleur||'#2b45d4')}">
+    <div class="top">
+      <div class="brand">${me.logo ? `<img src="${me.logo}" alt="">` : `<div class="name">${ph(me.bedrijf,'Bedrijfsnaam')}</div>`}</div>
+      <div class="from">${me.logo && me.bedrijf ? `<b style="color:#15171a">${esc(me.bedrijf)}</b><br>` : ''}${ph(me.naam,'Je naam')}<br>${ph(me.adres,'Adres')}<br>${ph(me.postcode,'Postcode')} ${ph(me.plaats,'Plaats')}<br>${esc(me.email)}${me.tel?'<br>'+esc(me.tel):''}</div>
+    </div>
+    <div class="title"><span class="w">Factuur</span><span class="nr">${esc(inv.nummer)}</span>${inv.ref ? `<span class="ref">Uw referentie <b>${esc(inv.ref)}</b></span>` : ''}</div>
+    <div class="meta">
+      <div class="to"><div class="k">Aan</div><div class="v">${to}</div></div>
+      <div><div class="k">Factuurdatum</div><div class="v">${lang(inv.datum)}</div></div>
+      <div><div class="k">Vervaldatum</div><div class="v">${lang(inv.verval)}</div></div>
+      <div><div class="k">Periode</div><div class="v">${esc(inv.periode)}</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Omschrijving</th><th class="r">Aantal</th><th class="r">Tarief</th><th class="r">BTW</th><th class="r">Bedrag</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="totals">
+      <div><span>Subtotaal</span><span>${eur(t.sub)}</span></div>
+      ${btwRows}
+      <div class="g"><span>Totaal</span><span>${eur(t.totaal)}</span></div>
+    </div>
+    ${inv.notitie ? `<div class="memo">${esc(inv.notitie)}</div>` : ''}
+    <div class="paygroup">
+    <div class="pay"><div>Graag <b>${eur(t.totaal)}</b> overmaken vóór <b>${lang(inv.verval)}</b> op <span class="nw">${ph(me.iban,'IBAN')}</span> t.n.v. ${ph(me.tnv||me.bedrijf,'naam')}, onder vermelding van factuurnummer ${esc(inv.nummer)}.</div></div>
+    ${(q => q ? `<figure class="qr">${q}<figcaption><b>Betalen met QR code</b>Scan de code met je bankapp. De overboeking staat dan klaar met het juiste bedrag en factuurnummer. Let op: niet elke bank ondersteunt deze code (EPC QR).</figcaption></figure>` : '')(epcQR(me, t.totaal, 'Factuur ' + inv.nummer + (inv.ref ? ' ref ' + inv.ref : '')))}
+    </div>
+    <div class="grow"></div>
+    <div class="endgroup">
+    ${me.voorwaarden ? `<div class="terms">${esc(me.voorwaarden)}</div>` : ''}
+    <div class="foot">
+      <span><b>${esc(me.bedrijf)}</b></span>
+      <span>KvK ${ph(me.kvk,'KvK nummer')}</span>
+      <span>BTW ${ph(me.btw,'BTW nummer')}</span>
+      <span>IBAN ${ph(me.iban,'IBAN')}</span>
+    </div>
+    </div>
+  </article>`;
+}
+
+/* ===== Render: formulieren ===== */
+function renderKlantSelect(){
+  const sel = $('#d-klant');
+  sel.innerHTML = S.klanten.length
+    ? S.klanten.map(k => `<option value="${k.id}">${esc(k.naam)}</option>`).join('')
+    : `<option value="">Nog geen klanten</option>`;
+  sel.value = S.draft.klantId || '';
+}
+function renderLines(){
+  $('#lines').innerHTML = S.draft.regels.map((r,i) => `<div class="line" data-i="${i}">
+      <textarea rows="1" data-k="oms" placeholder="Omschrijving, bijvoorbeeld Fotoshoot portret">${esc(r.oms)}</textarea>
+      <div class="nums">
+        <div><label>Aantal</label><input data-k="aantal" inputmode="decimal" value="${vast(r) ? '' : esc(r.aantal)}" ${vast(r) ? 'disabled placeholder="1"' : ''}></div>
+        <div><label>Soort</label><select data-k="eenheid">${Object.entries(EENHEDEN).map(([v,t])=>`<option value="${v}" ${v===r.eenheid?'selected':''}>${t}</option>`).join('')}</select></div>
+        <div><label>${vast(r) ? 'Bedrag' : 'Prijs'}</label><input data-k="prijs" inputmode="decimal" value="${esc(r.prijs)}"></div>
+        <div><label>BTW</label><select data-k="btw">${[21,9,0].map(p=>`<option value="${p}" ${+r.btw===p?'selected':''}>${p}%</option>`).join('')}</select></div>
+        <button class="del" data-del="${i}" aria-label="Regel verwijderen" title="Regel verwijderen">✕</button>
+      </div></div>`).join('');
+}
+function renderSum(){
+  const t = calc(S.draft.regels);
+  $('#sum').innerHTML = `<div><span>Subtotaal</span><span>${eur(t.sub)}</span></div>`
+    + t.btw.map(b=>`<div><span>BTW ${b.p}%</span><span>${eur(b.bedrag)}</span></div>`).join('')
+    + `<div class="tot"><span>Totaal · factuur ${esc(nummer())}</span><span>${eur(t.totaal)}</span></div>`;
+}
+function renderDraftForm(){
+  renderKlantSelect();
+  $('#d-datum').value = S.draft.datum;
+  $('#d-periode').value = S.draft.periode;
+  $('#d-ref').value = S.draft.ref || '';
+  $('#d-notitie').value = S.draft.notitie;
+  renderLines(); renderSum();
+  $('#firstrun').hidden = !!(S.me.bedrijf && S.klanten.length);
+}
+function renderArchief(){
+  const list = [...S.facturen].reverse();
+  $('#archlist').innerHTML = list.length ? `<table class="list"><thead><tr><th>Nummer</th><th>Klant</th><th>Datum</th><th class="r">Totaal</th><th></th></tr></thead><tbody>`
+    + list.map(f => `<tr data-nr="${esc(f.nummer)}" class="${view===f.nummer?'sel':''}">
+        <td class="n">${esc(f.nummer)}</td><td>${esc(f.klant?.naam)}</td><td class="n">${new Date(f.datum+'T12:00').toLocaleDateString('nl-NL')}</td>
+        <td class="r">${eur(calc(f.regels).totaal)}</td>
+        <td class="r"><button class="pill ${f.betaald?'paid':''}" data-paid="${esc(f.nummer)}">${f.betaald?'Betaald':'Open'}</button></td></tr>`).join('')
+    + `</tbody></table>` : `<p class="empty">Nog niets verstuurd. Je eerste factuur verschijnt hier na "Opslaan en PDF maken".</p>`;
+  $('#archactions').hidden = !view;
+  const last = S.facturen[S.facturen.length-1];
+  $('#a-del').hidden = !(view && last && last.nummer === view);
+}
+function renderKlanten(){
+  $('#klantlist').innerHTML = S.klanten.length ? `<table class="list"><thead><tr><th>Klant</th><th>Plaats</th><th class="r">Tarief</th></tr></thead><tbody>`
+    + S.klanten.map(k => `<tr data-k="${k.id}" class="${editKlant===k.id?'sel':''}"><td>${esc(k.naam)}</td><td>${esc(k.plaats)}</td><td class="r">${k.werkwijze==='vast' ? 'Vast bedrag' : k.tarief ? eur(num(k.tarief))+' p/u' : ''}</td></tr>`).join('')
+    + `</tbody></table>` : `<p class="empty">Nog geen klanten. Voeg je eerste klant hieronder toe.</p>`;
+}
+function renderMe(){
+  document.querySelectorAll('[data-me]').forEach(el => { if (document.activeElement !== el) el.value = S.me[el.dataset.me] ?? ''; });
+  $('#nrvoorbeeld').textContent = `Je volgende factuur wordt ${nummer()}. Zet dit op het nummer na je laatste factuur.`;
+}
+function renderPreview(){
+  const f = (tab === 'archief' && view) ? S.facturen.find(x => x.nummer === view) : null;
+  $('#sheet').innerHTML = renderInvoice(f || fromDraft());
+  $('#cap').textContent = f ? `Factuur ${f.nummer}, zoals verstuurd.` : 'Voorbeeld. Zo ziet de PDF eruit.';
+}
+function renderAll(){
+  renderDraftForm(); renderArchief(); renderKlanten(); renderMe(); renderPreview();
+}
+
+/* ===== Tabs ===== */
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function showTab(t){
+  tab = t;
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === t));
+  document.querySelectorAll('.view').forEach(v => v.hidden = v.id !== 'v-'+t);
+  renderAll();
+}
+
+/* ===== Concept bewerken ===== */
+$('#d-klant').onchange = e => {
+  S.draft.klantId = e.target.value;
+  S.draft.ref = klant(S.draft.klantId)?.ref || '';
+  S.draft.regels = S.draft.regels.map(r => (r.oms || num(r.aantal) || (vast(r) && num(r.prijs))) ? r : blankLine());
+  save(); renderLines(); renderSum(); renderPreview();
+};
+$('#d-datum').oninput = e => { S.draft.datum = e.target.value; save(); renderPreview(); };
+$('#d-periode').oninput = e => { S.draft.periode = e.target.value; save(); renderPreview(); };
+$('#d-ref').oninput = e => { S.draft.ref = e.target.value; save(); renderPreview(); };
+$('#d-notitie').oninput = e => { S.draft.notitie = e.target.value; save(); renderPreview(); };
+$('#lines').addEventListener('input', e => {
+  const line = e.target.closest('.line'); if (!line || !e.target.dataset.k) return;
+  const k = e.target.dataset.k, r = S.draft.regels[+line.dataset.i];
+  r[k] = k==='btw' ? +e.target.value : e.target.value;
+  if (k === 'eenheid'){   // wisselen tussen uren en vast bedrag: velden opnieuw tekenen
+    if (vast(r)) r.aantal = '';
+    else if (!num(r.prijs)) r.prijs = klant(S.draft.klantId)?.tarief ?? '';
+    renderLines(); line.parentNode.querySelector(`[data-i="${line.dataset.i}"] [data-k=prijs]`)?.focus();
+  }
+  save(); renderSum(); renderPreview();
+});
+$('#lines').addEventListener('click', e => {
+  const d = e.target.closest('[data-del]'); if (!d) return;
+  S.draft.regels.splice(+d.dataset.del, 1);
+  if (!S.draft.regels.length) S.draft.regels.push(blankLine());
+  save(); renderLines(); renderSum(); renderPreview();
+});
+$('#addline').onclick = () => { S.draft.regels.push(blankLine()); save(); renderLines(); renderSum(); renderPreview(); $('#lines .line:last-child textarea').focus(); };
+$('#copylast').onclick = () => {
+  const vorige = [...S.facturen].reverse().find(f => f.klant?.id === S.draft.klantId) || S.facturen[S.facturen.length-1];
+  if (!vorige) return alert('Er is nog geen eerdere factuur.');
+  S.draft.regels = structuredClone(vorige.regels).map(r => ({...r, aantal:'', prijs: vast(r) ? '' : r.prijs}));
+  S.draft.notitie = vorige.notitie || '';
+  save(); renderDraftForm(); renderPreview();
+};
+$('#reset').onclick = () => {
+  if (!confirm('Concept leegmaken?')) return;
+  S.draft = newDraft(); S.draft.regels = [blankLine()]; save(); $('#saved').hidden = true; renderAll();
+};
+
+/* ===== Afronden: opslaan, PDF, mail ===== */
+function missing(inv){
+  const m = [];
+  if (!inv.klant) m.push('een klant');
+  if (!S.me.bedrijf) m.push('je bedrijfsnaam');
+  if (!S.me.kvk) m.push('je KvK nummer');
+  if (!S.me.btw) m.push('je BTW nummer');
+  if (!S.me.iban) m.push('je IBAN');
+  if (!inv.regels.some(r => r.oms && qty(r) && num(r.prijs))) m.push('minstens één regel met omschrijving, aantal en bedrag');
+  return m;
+}
+function printInvoice(f){
+  const old = document.title;
+  document.title = `Factuur ${f.nummer} ${f.klant?.naam || ''}`.trim();   // wordt de bestandsnaam van de PDF
+  renderPreview();
+  setTimeout(() => { window.print(); document.title = old; }, 50);
+}
+function mail(f){
+  const t = calc(f.regels), me = f.me, k = f.klant || {};
+  // {velden} in onderwerp en tekst vervangen door de gegevens van deze factuur
+  const velden = {nummer:f.nummer, periode:f.periode, totaal:eur(t.totaal), vervaldatum:lang(f.verval),
+                  klant:k.naam||'', contact:k.contact||'', referentie:f.ref||'', bedrijf:me.bedrijf||'', naam:me.naam||''};
+  const vul = tekst => String(tekst||'').replace(/\{(\w+)\}/g, (m, v) => v in velden ? velden[v] : m);
+  const body = vul(S.me.mailtekst || MAIL_TEKST);
+  const subject = vul(S.me.mailonderwerp || MAIL_ONDERWERP), bcc = S.me.boekhoud;
+  if (S.me.mailvia === 'app'){
+    let url = `mailto:${encodeURIComponent(k.email||'')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    if (bcc) url += `&bcc=${encodeURIComponent(bcc)}`;
+    location.href = url;
+    return;
+  }
+  // Gmail opstellen; authuser (hoofdadres van het Google account) kiest het juiste account bij meerdere logins
+  const q = [['authuser', S.me.gmail || ''], ['view','cm'], ['fs','1'], ['to', k.email||''], ['su', subject], ['body', body]];
+  if (bcc) q.push(['bcc', bcc]);
+  const a = document.createElement('a');
+  a.href = 'https://mail.google.com/mail/?' + q.filter(([,v]) => v).map(([k,v]) => k + '=' + encodeURIComponent(v)).join('&');
+  a.target = '_blank'; a.rel = 'noopener noreferrer';
+  document.body.appendChild(a); a.click(); a.remove();
+  // Vangnet: mailtekst ook op het klembord
+  try { navigator.clipboard.writeText(body); } catch(e){}
+}
+$('#finish').onclick = () => {
+  const inv = fromDraft(), m = missing(inv);
+  if (m.length) return alert('Nog nodig: ' + m.join(', ') + '.');
+  if (S.facturen.some(f => f.nummer === inv.nummer)) return alert(`Nummer ${inv.nummer} bestaat al. Pas het volgende nummer aan bij Mijn gegevens.`);
+  const f = structuredClone({...inv, regels:inv.regels.filter(r => r.oms || num(r.aantal) || (vast(r) && num(r.prijs))), me:{...S.me}, betaald:false, gemaakt:new Date().toISOString()});
+  S.facturen.push(f);
+  S.me.volgnr = (parseInt(S.me.volgnr)||1) + 1;
+  const kid = S.draft.klantId;
+  S.draft = newDraft(); S.draft.klantId = kid; S.draft.ref = klant(kid)?.ref || ''; S.draft.regels = [blankLine()];
+  save();
+  view = f.nummer; tab = 'archief';
+  showTab('archief');
+  printInvoice(f);
+  const n = $('#saved'); n.hidden = false;
+  n.textContent = `Factuur ${f.nummer} is opgeslagen. Kies in het printvenster "Opslaan als PDF" en daarna "Mail opstellen" bij Verstuurd.`;
+};
+
+/* ===== Archief ===== */
+$('#archlist').addEventListener('click', e => {
+  const p = e.target.closest('[data-paid]');
+  if (p){ const f = S.facturen.find(x => x.nummer === p.dataset.paid); f.betaald = !f.betaald; save(); renderArchief(); return; }
+  const tr = e.target.closest('tr[data-nr]'); if (!tr) return;
+  view = tr.dataset.nr; renderArchief(); renderPreview();
+});
+const cur = () => S.facturen.find(x => x.nummer === view);
+$('#a-pdf').onclick = () => cur() && printInvoice(cur());
+$('#a-mail').onclick = () => cur() && mail(cur());
+$('#a-copy').onclick = () => {
+  const f = cur(); if (!f) return;
+  S.draft = newDraft(); S.draft.klantId = f.klant?.id || ''; S.draft.ref = f.ref || ''; S.draft.regels = structuredClone(f.regels).map(r=>({...r, aantal:'', prijs: vast(r) ? '' : r.prijs})); S.draft.notitie = f.notitie || '';
+  save(); showTab('nieuw');
+};
+$('#a-del').onclick = () => {
+  const f = cur(); if (!f || !confirm(`Factuur ${f.nummer} verwijderen? Het nummer wordt dan opnieuw gebruikt. Doe dit alleen als hij nog niet verstuurd is.`)) return;
+  S.facturen.pop(); S.me.volgnr = Math.max(1, (parseInt(S.me.volgnr)||2) - 1); view = null; save(); renderAll();
+};
+
+/* ===== Klanten ===== */
+const KF = ['naam','contact','adres','postcode','plaats','email','werkwijze','tarief','btw','ref'];
+function fillKlantForm(k){
+  KF.forEach(f => $('#k-'+f).value = k?.[f] ?? (f === 'werkwijze' ? 'uur' : ''));
+  $('#k-kop').textContent = k ? 'Klant bewerken' : 'Nieuwe klant';
+  $('#k-save').textContent = k ? 'Wijzigingen opslaan' : 'Klant opslaan';
+  $('#k-cancel').hidden = $('#k-del').hidden = !k;
+}
+$('#klantlist').addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-k]'); if (!tr) return;
+  editKlant = tr.dataset.k; fillKlantForm(klant(editKlant)); renderKlanten();
+});
+$('#klantform').onsubmit = e => {
+  e.preventDefault();
+  const data = Object.fromEntries(KF.map(f => [f, $('#k-'+f).value.trim()]));
+  if (editKlant){ Object.assign(klant(editKlant), data); if (S.draft.klantId === editKlant && !S.draft.ref) S.draft.ref = data.ref; }
+  else { const k = {id:uid(), ...data}; S.klanten.push(k); if (!S.draft.klantId){ S.draft.klantId = k.id; S.draft.ref = k.ref; S.draft.regels.forEach(r => { if (!r.prijs) r.prijs = k.tarief; }); } }
+  editKlant = null; fillKlantForm(null); save(); renderAll();
+};
+$('#k-cancel').onclick = () => { editKlant = null; fillKlantForm(null); renderKlanten(); };
+$('#k-del').onclick = () => {
+  if (!confirm('Klant verwijderen? Oude facturen blijven bewaard.')) return;
+  S.klanten = S.klanten.filter(k => k.id !== editKlant);
+  if (S.draft.klantId === editKlant) S.draft.klantId = S.klanten[0]?.id || '';
+  editKlant = null; fillKlantForm(null); save(); renderAll();
+};
+
+/* ===== Mijn gegevens ===== */
+document.querySelectorAll('[data-me]').forEach(el => el.addEventListener('input', () => {
+  S.me[el.dataset.me] = el.value; save(); renderMe(); renderSum(); renderPreview();
+}));
+$('#m-logo').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  const img = new Image();
+  img.onload = () => {   // verkleinen zodat het in de browseropslag past
+    const s = Math.min(1, 600/img.width), c = document.createElement('canvas');
+    c.width = img.width*s; c.height = img.height*s;
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    S.me.logo = c.toDataURL('image/png'); save(); renderPreview();
+    URL.revokeObjectURL(img.src);
+  };
+  img.src = URL.createObjectURL(file);
+};
+$('#m-mailreset').onclick = () => { S.me.mailonderwerp = MAIL_ONDERWERP; S.me.mailtekst = MAIL_TEKST; save(); renderMe(); };
+$('#m-logodel').onclick = () => { S.me.logo = ''; $('#m-logo').value = ''; save(); renderPreview(); };
+
+/* ===== Back-up ===== */
+$('#b-export').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(S,null,2)], {type:'application/json'}));
+  a.download = `facturen-backup-${iso(new Date())}.json`; a.click();
+};
+$('#b-import').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  file.text().then(t => {
+    try{
+      const r = JSON.parse(t);
+      if (!r.me || !Array.isArray(r.facturen)) throw 0;
+      if (!confirm(`Back-up met ${r.facturen.length} facturen en ${r.klanten?.length||0} klanten terugzetten? Wat er nu staat wordt vervangen.`)) return;
+      S = {...structuredClone(DEF), ...r, me:{...DEF.me, ...r.me}}; save(); renderAll();
+    }catch(err){ alert('Dit bestand is geen back-up van deze factuurpagina.'); }
+  });
+};
+
+// Melding op de telefoon, één keer wegklikken
+try { if (!localStorage.getItem('melding.telefoon')) $('#mobile-note').hidden = false; } catch(e){ $('#mobile-note').hidden = false; }
+$('#mobile-ok').onclick = () => { $('#mobile-note').hidden = true; try { localStorage.setItem('melding.telefoon','1'); } catch(e){} };
+
+renderAll();
+</script>
+</body>
+</html>
