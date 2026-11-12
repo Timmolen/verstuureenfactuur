@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Factuur maken zonder account | Verstuur een factuur</title>
+<meta name="description" content="Maak gratis een nette factuur zonder account. Je gegevens blijven op je eigen computer. Vul in, download als PDF en mail hem direct.">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+:root{--lb:#e4ebff;--lb-rand:#cfd9fb;--lb-diep:#d2dcfa}
+body{background:#fff}
+
+/* ===== Bovenaan ===== */
+.hero{background:var(--lb);padding:64px 0 72px}
+.hero .wrap{display:grid;grid-template-columns:.92fr 1.08fr;gap:48px;align-items:center}
+.hero h1{font-size:clamp(34px,4.6vw,52px);line-height:1.06;letter-spacing:-.025em;margin:0 0 18px;text-wrap:balance}
+.hero .sub{font-size:19px;color:#2f343a;margin:0 0 28px;max-width:40ch}
+.checks{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:10px}
+.checks li{display:flex;gap:10px;align-items:center;font-weight:500}
+.checks svg{flex:none;width:22px;height:22px}
+
+.app{background:var(--lb-diep);border-radius:16px;padding:16px;display:grid;grid-template-columns:190px 1fr;gap:14px;box-shadow:0 1px 2px rgba(20,30,50,.06),0 24px 60px rgba(20,30,50,.16)}
+.app .form{background:#fff;border-radius:11px;padding:14px;font-size:11.5px;color:var(--muted);border:1px solid #d9dde2}
+.app .form b{display:block;color:var(--ink);font-size:13.5px;margin-bottom:10px}
+.app .form label{display:block;margin:8px 0 3px}
+.mf{border-radius:6px;background:var(--field);border:1px solid #e1e4e8;padding:5px 8px;color:var(--ink);font-size:12px}
+.app .form .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.app .form .go{margin-top:14px;border-radius:7px;background:var(--accent);color:#fff;font-weight:600;font-size:12px;text-align:center;padding:7px}
+.sheet{background:#fff;border-radius:3px;padding:20px 20px 16px;font-size:10px;line-height:1.45;box-shadow:0 1px 3px rgba(20,30,50,.08)}
+.sheet .t{display:flex;justify-content:space-between;margin-bottom:18px;gap:10px}
+.sheet .t b{font-size:13px}
+.sheet .t span{text-align:right;color:var(--muted);font-size:9px}
+.sheet .n{display:flex;gap:9px;align-items:baseline;border-bottom:2px solid var(--accent);padding-bottom:6px;margin-bottom:12px}
+.sheet .n em{font-style:normal;color:var(--accent);font-weight:600}
+.sheet .n strong{font-size:14px}
+.sheet .r{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eceef1;font-variant-numeric:tabular-nums}
+.sheet .sub2{display:flex;justify-content:space-between;width:58%;margin-left:auto;padding:3px 0;color:var(--muted);font-variant-numeric:tabular-nums}
+.sheet .tot{display:flex;justify-content:space-between;width:58%;margin:4px 0 12px auto;border-top:1.5px solid var(--ink);padding-top:6px;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums}
+.sheet .pay{background:var(--accent-soft);border-left:2px solid var(--accent);padding:7px 9px;margin-bottom:10px}
+.sheet .qr{display:flex;gap:10px;align-items:center}
+.sheet .qr img{width:42px;height:42px;display:block}
+.sheet .qr span{border-left:1.5px solid var(--accent);padding-left:8px;color:var(--muted)}
+.sheet .qr b{color:var(--ink);display:block}
+
+/* ===== Algemeen blok ===== */
+section.block{padding:88px 0}
+section.lb{background:var(--lb)}
+section.block h2{font-size:clamp(28px,3.2vw,38px);letter-spacing:-.02em;line-height:1.12;margin:0 0 12px;text-wrap:balance}
+section.block .intro{font-size:18px;color:#2f343a;max-width:56ch;margin:0 0 48px}
+
+/* ===== Zo werkt het: beeld per stap ===== */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:36px}
+.step .pic{height:210px;border-radius:16px;background:var(--lb);display:grid;place-items:center;margin-bottom:20px;overflow:hidden;position:relative}
+.step small{display:block;color:var(--accent);font-weight:600;font-size:14px;margin-bottom:4px}
+.step b{display:block;font-size:20px;margin-bottom:6px;letter-spacing:-.01em}
+.step p{margin:0;color:var(--muted)}
+.pic .card{background:#fff;border-radius:10px;box-shadow:0 10px 28px rgba(20,30,50,.12);font-size:11px;color:var(--muted)}
+.pic .p1{width:210px;padding:12px 14px;transform:translateY(22px)}
+.pic .p1 label{display:block;margin:6px 0 3px}
+.pic .p2{width:150px;height:200px;padding:16px;transform:translateY(24px) rotate(-3deg)}
+.pic .p2 .ln{height:6px;border-radius:3px;background:#e6e9ee;margin:7px 0}
+.pic .p2 .ln.b{background:var(--accent);height:3px;margin:10px 0 12px}
+.pic .p2 .tag{position:absolute;right:-14px;top:18px;background:var(--accent);color:#fff;font-weight:700;font-size:11px;padding:4px 8px;border-radius:6px}
+.pic .p3{width:260px;padding:12px 14px}
+.pic .p3 .row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #eef0f3}
+.pic .p3 .row span:first-child{width:64px;flex:none}
+.pic .p3 .row span:last-child{color:var(--ink)}
+.pic .p3 .att{margin-top:10px;display:flex;gap:8px;align-items:center;background:var(--field);border:1px solid #e1e4e8;border-radius:7px;padding:6px 8px;color:var(--ink)}
+.pic .p3 .att i{width:18px;height:22px;border-radius:3px;background:#e2534a;display:block}
+
+/* ===== Alles op je factuur ===== */
+/* Elke uitleg (pin) hangt aan het onderdeel op de factuur zelf, dus hij staat altijd op de juiste hoogte. */
+.anno{display:flex;justify-content:center}
+.anno .big{position:relative;width:440px;background:#fff;padding:32px;font-size:12.5px;line-height:1.5;box-shadow:0 2px 4px rgba(20,30,50,.06),0 30px 70px rgba(20,30,50,.16);border-radius:4px}
+.big .t{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}
+.big .logo-ph{width:46px;height:46px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700}
+.big .meta{text-align:right;color:var(--muted);font-size:11.5px;line-height:1.55}
+.big .meta em{font-style:normal;color:var(--accent);font-weight:600}
+.big .meta strong{color:var(--ink);font-size:16px}
+.big .to{margin-bottom:18px;color:#3a4048;font-size:12px}
+.big .to b{color:var(--ink)}
+.big .rows{border-top:2.5px solid var(--accent);margin-bottom:12px}
+.big .r{display:grid;grid-template-columns:1fr 44px 84px;gap:8px;padding:7px 0;border-bottom:1px solid #eceef1;font-variant-numeric:tabular-nums}
+.big .r span:not(:first-child){text-align:right}
+.big .r.h{color:var(--muted);font-size:11px;font-weight:600}
+.big .totals{width:64%;margin:0 0 20px auto}
+.big .s{display:flex;justify-content:space-between;padding:3px 0;color:var(--muted);font-variant-numeric:tabular-nums}
+.big .tot{display:flex;justify-content:space-between;margin-top:6px;border-top:1.5px solid var(--ink);padding-top:8px;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.big .qr{display:flex;gap:12px;align-items:center}
+.big .qr img{width:58px;height:58px}
+.big .qr span{border-left:1.5px solid var(--accent);padding-left:10px;color:var(--muted)}
+.big .qr b{display:block;color:var(--ink)}
+.big .hl-logo,.big .hl-num{position:relative}
+.big .hl{position:relative}
+.big .hl-qr{display:inline-block}
+
+.pin{position:absolute;top:50%;transform:translateY(-50%);width:230px;font-size:15px;color:#3a4048}
+.pin b{display:block;font-size:17px;color:var(--ink);margin-bottom:2px}
+.pin.pl{right:calc(100% + 72px);text-align:right}
+.pin.pr{left:calc(100% + 72px)}
+.pin::after{content:"";position:absolute;top:50%;width:46px;border-top:1.5px solid var(--accent)}
+.pin::before{content:"";position:absolute;top:50%;width:9px;height:9px;margin-top:-4px;border-radius:50%;background:var(--accent)}
+.pin.pl::after{right:-56px}.pin.pl::before{right:-64px}
+.pin.pr::after{left:-56px}.pin.pr::before{left:-64px}
+/* de afstand tot de rand van de factuur verschilt per onderdeel; compenseer zodat alle uitleg even ver van de factuur staat */
+.hl-logo .pin.pl{right:calc(100% + 72px)}
+.hl-qr .pin.pl{right:calc(100% + 72px)}
+
+.mark{display:none;position:absolute;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font:700 12px/22px var(--font);text-align:center}
+.mark.ml{left:-44px}.mark.mr{right:-44px}
+.anno-list{display:none;list-style:none;margin:32px 0 0;padding:0;counter-reset:a;grid-template-columns:1fr 1fr;gap:20px 32px}
+.anno-list li{position:relative;padding-left:34px;color:#3a4048}
+.anno-list li::before{counter-increment:a;content:counter(a);position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font:700 12px/22px var(--font);text-align:center}
+.anno-list b{display:block;font-size:17px;color:var(--ink)}
+
+/* Te smal voor uitleg naast de factuur: genummerde bolletjes op de factuur en de uitleg eronder */
+@media (max-width:1180px){
+  .anno{flex-direction:column;align-items:center}
+  .pin{display:none}
+  .mark{display:block}
+  .anno-list{display:grid;width:100%;max-width:640px}
+}
+@media (max-width:560px){
+  .anno .big{width:100%;padding:24px 22px}
+  .mark.ml{left:-34px}.mark.mr{right:-34px}
+  .anno .big{margin:0 12px}
+  .anno-list{grid-template-columns:1fr}
+}
+
+/* ===== Privacy: vergelijking ===== */
+.compare{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(6,auto);column-gap:24px;margin-bottom:40px}
+.flow{display:grid;grid-row:span 6;grid-template-rows:subgrid;border-radius:18px;padding:28px}
+.flow h3{margin:0 0 18px;font-size:18px}
+.flow.them{background:#f4f5f7;color:#4a5058}
+.flow.us{background:var(--lb);border:1.5px solid var(--accent)}
+.flow .it{background:#fff;border-radius:11px;padding:13px 16px;font-weight:500;box-shadow:0 1px 2px rgba(20,30,50,.06);display:flex;flex-direction:column;justify-content:center}
+.flow .it small{display:block;font-weight:400;color:var(--muted);margin-top:2px}
+.flow .arrow{display:flex;justify-content:center;padding:6px 0;color:#9aa0a8}
+.flow.us .arrow{color:var(--accent)}
+.flow.us .it.last{background:var(--accent);color:#fff}
+.flow.us .it.last small{color:#d9e0ff}
+.pv{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 0}
+.pv > div{display:grid;grid-template-columns:22px 1fr;column-gap:12px}
+.pv svg{width:22px;height:22px;grid-row:span 2;margin-top:1px}
+.pv b{display:block;font-size:17px;margin-bottom:2px}
+.pv span{color:var(--muted)}
+.tip{margin-top:28px;border:1.5px solid var(--lb-rand);border-radius:12px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start;color:#2f343a}
+.tip svg{flex:none;margin-top:2px}
+
+/* ===== Vragen ===== */
+.faq{max-width:760px}
+.faq details{border-bottom:1px solid var(--line);padding:4px 0}
+.faq summary{cursor:pointer;list-style:none;font-weight:600;font-size:18px;padding:16px 36px 16px 0;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:4px;top:12px;font-size:24px;font-weight:400;color:var(--muted)}
+.faq details[open] summary::after{content:"−"}
+.faq details p{margin:0 0 18px;color:#2f343a;max-width:62ch}
+
+/* ===== Slot ===== */
+.final{padding:88px 0}
+.final .box{background:#fff;border-radius:22px;padding:56px 40px;text-align:center;box-shadow:0 24px 60px rgba(20,30,50,.10)}
+.final h2{margin-bottom:10px!important}
+.final p{font-size:18px;color:#2f343a;margin:0 auto 28px;max-width:48ch}
+.final .checks{display:grid;grid-template-columns:repeat(3,190px);justify-content:center;gap:0;margin:28px auto 0}
+.final .checks li{justify-content:center;padding:4px 0}
+.final .checks li+li{border-left:1px solid var(--line)}
+
+@media (max-width:900px){
+  .hero{padding:40px 0 48px}
+  .hero .wrap{grid-template-columns:1fr;gap:36px}
+  .compare{grid-template-columns:1fr;row-gap:20px}
+  .flow{grid-row:auto;grid-template-rows:none}
+}
+@media (max-width:720px){
+  .app{grid-template-columns:1fr;padding:10px}
+  .app .form{display:none}
+  .steps,.pv{grid-template-columns:1fr;gap:32px}
+  section.block,.final{padding:56px 0}
+  .final .box{padding:36px 20px}
+  .final .checks{grid-template-columns:1fr;width:max-content;max-width:100%}
+  .final .checks li{justify-content:flex-start}
+  .final .checks li+li{border-left:0}
+  .hero .btn.big{width:100%}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="check" viewBox="0 0 22 22"><circle cx="11" cy="11" r="11" fill="#2b45d4"/><path d="M6.5 11.3l3 3 6-6.3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="down" viewBox="0 0 20 20"><path d="M10 3v13M4.5 10.5L10 16l5.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="site-nav">
+  <div class="wrap">
+    <a class="logo" href="/">verstuur<span>een</span>factuur</a>
+    <nav class="links" aria-label="Hoofdmenu"><a href="#zo-werkt-het">Zo werkt het</a><a href="#privacy">Privacy</a><a href="#vragen">Vragen</a></nav>
+    <a class="btn primary" href="/maken">Maak je factuur</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <h1>Factuur maken zonder account.</h1>
+        <p class="sub">Je gegevens blijven op je eigen computer. Vul in, download als PDF en mail hem direct.</p>
+        <a class="btn primary big" href="/maken">Maak je factuur</a>
+        <ul class="checks">
+          <li><svg><use href="#check"/></svg>Gratis, zonder abonnement</li>
+          <li><svg><use href="#check"/></svg>Geen account of e-mailadres nodig</li>
+          <li><svg><use href="#check"/></svg>Onthoudt je klanten, lokaal op jouw pc</li>
+        </ul>
+      </div>
+      <div class="app" role="img" aria-label="Voorbeeld van de tool: links het invulpaneel, rechts de factuur">
+        <div class="form">
+          <b>Nieuwe factuur</b>
+          <label>Klant</label><div class="mf">Studio Noord</div>
+          <div class="two"><div><label>Datum</label><div class="mf">11-11-2026</div></div><div><label>Periode</label><div class="mf">oktober</div></div></div>
+          <label>Omschrijving</label><div class="mf">Fotoshoot portret</div>
+          <label>Bedrag</label><div class="mf">350,00</div>
+          <div class="go">Opslaan en PDF maken</div>
+        </div>
+        <div class="sheet">
+          <div class="t"><b>Jouw bedrijf</b><span>Straat 1<br>1234 AB Plaats</span></div>
+          <div class="n"><em>Factuur</em><strong>2026.0012</strong></div>
+          <div class="r"><span>Fotoshoot portret</span><span>€ 350,00</span></div>
+          <div class="r"><span>Nabewerking 10 foto's</span><span>€ 125,00</span></div>
+          <div class="sub2"><span>BTW 21%</span><span>€ 99,75</span></div>
+          <div class="tot"><span>Totaal</span><span>€ 574,75</span></div>
+          <div class="pay">Graag <b>€ 574,75</b> overmaken vóór 25 november 2026.</div>
+          <div class="qr"><img src="assets/demo-qr.svg" alt=""><span><b>Betalen met QR code</b>Scan met je bankapp</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="zo-werkt-het">
+    <div class="wrap">
+      <h2>In drie stappen verstuurd</h2>
+      <p class="intro">De eerste keer vul je je gegevens in. Daarna staat je factuur er in een paar minuten.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="pic"><div class="card p1"><label>Bedrijfsnaam</label><div class="mf">Jouw bedrijf</div><label>IBAN</label><div class="mf">NL00 BANK 0123 4567 89</div><label>Klant</label><div class="mf">Studio Noord</div></div></div>
+          <small>Stap 1</small><b>Vul je gegevens in</b><p>Eén keer je bedrijf en je klanten. Daarna staan ze er elke keer al.</p>
+        </div>
+        <div class="step">
+          <div class="pic"><div class="card p2"><div class="ln" style="width:50%"></div><div class="ln b"></div><div class="ln"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:60%;margin-left:40%"></div><span class="tag">PDF</span></div></div>
+          <small>Stap 2</small><b>Maak de PDF</b><p>Nummer, BTW, vervaldatum en totaal gaan vanzelf. Klaar om te versturen.</p>
+        </div>
+        <div class="step">
+          <div class="pic"><div class="card p3"><div class="row"><span>Aan</span><span>klant@voorbeeld.nl</span></div><div class="row"><span>Onderwerp</span><span>Factuur 2026.0012</span></div><div class="att"><i></i>Factuur 2026.0012.pdf</div></div></div>
+          <small>Stap 3</small><b>Mail hem</b><p>Eén klik opent een mail in Gmail of je mailprogramma, met de tekst al ingevuld.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block lb">
+    <div class="wrap">
+      <h2>Alles wat er op een factuur hoort</h2>
+      <p class="intro">Jij vult de omschrijving en het bedrag in. De rest regelt de tool.</p>
+      <div class="anno">
+        <div class="big" role="img" aria-label="Voorbeeldfactuur met uitleg">
+          <div class="t">
+            <div class="hl hl-logo"><div class="logo-ph">JB</div><i class="mark ml">1</i>
+              <span class="pin pl"><b>Je eigen logo en kleur</b><span>Zodat de factuur bij je bedrijf past.</span></span></div>
+            <div class="hl hl-num"><div class="meta"><em>Factuur</em> <strong>2026.0012</strong><br>Datum 11 november 2026<br>Vervaldatum 25 november 2026</div><i class="mark mr">2</i>
+              <span class="pin pr"><b>Nummer en datums vanzelf</b><span>Elk factuurnummer volgt op het vorige. De vervaldatum rekent de tool uit.</span></span></div>
+          </div>
+          <div class="to"><b>Studio Noord</b><br>Havenstraat 8<br>9711 AB Groningen</div>
+          <div class="rows">
+            <div class="r h"><span>Omschrijving</span><span>BTW</span><span>Bedrag</span></div>
+            <div class="r"><span>Fotoshoot portret</span><span>21%</span><span>€ 350,00</span></div>
+            <div class="r"><span>Nabewerking 10 foto's</span><span>21%</span><span>€ 125,00</span></div>
+          </div>
+          <div class="hl hl-btw totals"><div class="s"><span>Subtotaal</span><span>€ 475,00</span></div><div class="s"><span>BTW 21% over € 475,00</span><span>€ 99,75</span></div><div class="tot"><span>Totaal</span><span>€ 574,75</span></div><i class="mark mr">3</i>
+            <span class="pin pr"><b>BTW vanzelf berekend</b><span>Per tarief, met subtotaal en totaal eronder.</span></span></div>
+          <div class="hl hl-qr"><div class="qr"><img src="assets/demo-qr.svg" alt=""><span><b>Betalen met QR code</b>Scan met je bankapp</span></div><i class="mark ml">4</i>
+            <span class="pin pl"><b>Betalen met QR code</b><span>Je klant scant en de overboeking staat klaar.</span></span></div>
+        </div>
+        <ol class="anno-list">
+          <li><b>Je eigen logo en kleur</b><span>Zodat de factuur bij je bedrijf past.</span></li>
+          <li><b>Nummer en datums vanzelf</b><span>Elk factuurnummer volgt op het vorige. De vervaldatum rekent de tool uit.</span></li>
+          <li><b>BTW vanzelf berekend</b><span>Per tarief, met subtotaal en totaal eronder.</span></li>
+          <li><b>Betalen met QR code</b><span>Je klant scant en de overboeking staat klaar.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="privacy">
+    <div class="wrap">
+      <h2>Je gegevens gaan nergens heen.</h2>
+      <p class="intro">De meeste factuurtools bewaren je klanten en bedragen op hun eigen server. Hier blijft alles bij jou.</p>
+      <div class="compare">
+        <div class="flow them">
+          <h3>Bij de meeste factuurtools</h3>
+          <div class="it">Je klanten en bedragen<small>Namen, adressen en wat je factureert</small></div>
+          <div class="arrow"><svg width="20" height="20"><use href="#down"/></svg></div>
+          <div class="it">Op de server van het bedrijf<small>Daar staan ze, niet bij jou</small></div>
+          <div class="arrow"><svg width="20" height="20"><use href="#down"/></svg></div>
+          <div class="it">Account, e-mails en vaak een abonnement<small>Om de tool te kunnen blijven gebruiken</small></div>
+        </div>
+        <div class="flow us">
+          <h3>Bij verstuureenfactuur</h3>
+          <div class="it">Je klanten en bedragen<small>Namen, adressen en wat je factureert</small></div>
+          <div class="arrow"><svg width="20" height="20"><use href="#down"/></svg></div>
+          <div class="it">In je eigen browser<small>Op jouw computer, nergens anders</small></div>
+          <div class="arrow"><svg width="20" height="20"><use href="#down"/></svg></div>
+          <div class="it last">Klaar. Er gaat niets naar buiten.<small>Geen account, geen e-mails, geen abonnement</small></div>
+        </div>
+      </div>
+      <div class="pv">
+        <div><svg><use href="#check"/></svg><b>Geen account</b><span>Je hoeft je nergens aan te melden.</span></div>
+        <div><svg><use href="#check"/></svg><b>Geen tracking in de tool</b><span>Geen tellers of advertenties waar je factureert.</span></div>
+        <div><svg><use href="#check"/></svg><b>Jij houdt de controle</b><span>Download je gegevens als back-up en zet ze terug.</span></div>
+      </div>
+      <div class="tip"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9" fill="none" stroke="#2b45d4" stroke-width="1.6"/><path d="M10 5.5v5.5M10 13.6v.4" stroke="#2b45d4" stroke-width="1.8" stroke-linecap="round"/></svg><span>Omdat alles in je browser staat: wis je je browsergegevens, dan is het weg. Download daarom af en toe een back-up.</span></div>
+    </div>
+  </section>
+
+  <section class="block lb" id="vragen">
+    <div class="wrap">
+      <h2>Veelgestelde vragen</h2>
+      <div class="faq">
+        <details><summary>Is het echt gratis?</summary><p>Ja. Facturen maken, downloaden en mailen kost niets. Je hoeft geen account aan te maken en er is geen abonnement.</p></details>
+        <details><summary>Waar staan mijn gegevens?</summary><p>In de opslag van je eigen browser, op je eigen computer. Ze worden nergens naartoe gestuurd. Gebruik je een andere computer of browser, dan begin je daar leeg. Met een back-up neem je alles mee.</p></details>
+        <details><summary>Is de factuur geldig?</summary><p>De tool zet de verplichte gegevens op de factuur: een doorlopend factuurnummer, de datum, je KvK en BTW nummer, de BTW per tarief en de totalen. Controleer zelf wel of alles klopt voor jouw situatie.</p></details>
+        <details><summary>Kan ik mijn eigen logo gebruiken?</summary><p>Ja. Je voegt je logo toe en kiest zelf de kleur van je factuur.</p></details>
+        <details><summary>Werkt het op mijn telefoon?</summary><p>Het werkt het best op een computer. Op een telefoon kan het ook, maar dat is minder handig.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final lb" style="padding-top:0">
+    <div class="wrap">
+      <div class="box">
+        <h2 style="font-size:clamp(28px,3.2vw,38px);letter-spacing:-.02em;line-height:1.12;margin:0">Je eerste factuur staat er in een paar minuten.</h2>
+        <p>Vul je gegevens één keer in. Daarna is elke volgende factuur een kwestie van omschrijving, bedrag en versturen.</p>
+        <a class="btn primary big" href="/maken">Maak je factuur</a>
+        <ul class="checks">
+          <li><svg><use href="#check"/></svg>Gratis</li>
+          <li><svg><use href="#check"/></svg>Geen account</li>
+          <li><svg><use href="#check"/></svg>Blijft op jouw pc</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <a class="logo" href="/" style="margin:0;font-size:16px">verstuur<span>een</span>factuur</a>
+    <span class="spacer"></span>
+    <a href="mailto:contact@verstuureenfactuur.nl">contact@verstuureenfactuur.nl</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/voorwaarden">Voorwaarden</a>
+  </div>
+</footer>
+</body>
+</html>

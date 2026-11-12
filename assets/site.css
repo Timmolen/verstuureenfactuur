@@ -1,0 +1,48 @@
+/* Gedeelde stijl voor verstuureenfactuur.nl: landingspagina, /maken en de losse pagina's.
+   Lettertype Figtree staat op de eigen site (SIL Open Font License, zie fonts/OFL.txt). */
+@font-face{font-family:Figtree;src:url(fonts/figtree-400.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:Figtree;src:url(fonts/figtree-500.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:Figtree;src:url(fonts/figtree-600.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:Figtree;src:url(fonts/figtree-700.woff2) format("woff2");font-weight:700;font-display:swap}
+
+:root{
+  --desk:#e6e9ed; --panel:#ffffff; --ink:#15171a; --muted:#5d636b; --line:#d5d9de;
+  --field:#f6f7f9; --accent:#2b45d4; --accent-soft:#eef1fd; --ok:#1d7a4c; --warn:#a8321e;
+  --font:Figtree,"Avenir Next","Helvetica Neue",Arial,sans-serif;
+  --wrap:1120px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--desk);color:var(--ink);font:16px/1.55 var(--font);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 32px}
+[id]{scroll-margin-top:80px}   /* ankers niet onder het vaste menu laten vallen */
+
+/* Menu, overal hetzelfde */
+.site-nav{background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.site-nav .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.logo{font-weight:700;font-size:18px;letter-spacing:-.01em;text-decoration:none;margin-right:auto;white-space:nowrap}
+.logo span{color:var(--accent)}
+.site-nav .links{display:flex;gap:24px;font-size:15px}
+.site-nav .links a{text-decoration:none;color:var(--muted)}
+.site-nav .links a:hover,.site-nav .links a[aria-current]{color:var(--ink)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 16px;border-radius:9px;font:600 15px/1.2 var(--font);text-decoration:none;cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.big{padding:14px 22px;font-size:17px;border-radius:10px}
+
+.site-foot{border-top:1px solid var(--line);background:var(--panel);font-size:14px;color:var(--muted)}
+.site-foot .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center;padding-top:22px;padding-bottom:22px}
+.site-foot a{text-decoration:none}
+.site-foot a:hover{color:var(--ink)}
+.site-foot .spacer{flex:1}
+
+@media (max-width:720px){
+  .wrap{padding:0 16px}
+  .site-nav .links{display:none}
+  .site-nav .btn{padding:8px 12px;font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
