@@ -34,11 +34,54 @@ button,input,select,textarea{font:inherit;color:inherit}
   .app-nav .wrap{flex-wrap:wrap;height:auto;padding:10px 16px;gap:8px}
   .app-nav .tabs{order:3;width:100%;overflow-x:auto}
   .app-nav .local{display:none}
+  .helpbtn{margin-left:auto}
 }
 
 /* Werkvlak */
 .work{display:grid;grid-template-columns:minmax(380px,520px) auto;justify-content:center;gap:40px;padding:28px;align-items:start}
 .panel{background:var(--panel);border-radius:12px;padding:22px;border:1px solid var(--line)}
+/* Nieuwe factuur: losse kaarten per stap */
+.stack .pagehead{margin:2px 0 14px}
+.stack .pagehead h2{font-size:22px;margin:0 0 2px;letter-spacing:-.01em}
+.stack .pagehead .hint{margin:0;color:var(--muted);font-size:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+.step-hd{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.step-hd .num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:13px;display:grid;place-items:center;flex:none}
+.step-hd b{font-size:17px;letter-spacing:-.01em}
+.klantkeuze{display:grid;grid-template-columns:1fr auto;gap:8px}
+.newk{border:1.5px dashed #b9c6f5;background:#f7f9ff;border-radius:10px;padding:14px;margin:-2px 0 14px}
+.newk input{background:#fff}
+.linkbtn{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;padding:4px;text-decoration:underline}
+.linkbtn:hover{color:var(--ink)}
+/* Startlijstje */
+.startlist{border:1.5px solid #cfd9fb}
+.startlist .sl-hd{display:flex;justify-content:space-between;align-items:center}
+.startlist .sl-hd b{font-size:17px}
+.startlist .hint{margin:2px 0 12px;color:var(--muted);font-size:14px}
+.startlist ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.startlist li{display:flex;align-items:center;gap:10px;background:#f7f9ff;border-radius:9px;padding:9px 10px}
+.startlist li .n{width:24px;height:24px;border-radius:50%;border:1.5px solid #b9c6f5;display:grid;place-items:center;font-weight:700;font-size:12px;color:var(--accent);flex:none}
+.startlist li .btn{margin-left:auto}
+.startlist li.done .n{background:var(--ok);border-color:var(--ok);color:#fff}
+.startlist li.done .t{text-decoration:line-through;color:var(--muted)}
+.startlist li.done .btn{display:none}
+/* Hulp */
+.helpbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 6px;font:600 14px var(--font);background:#fff;color:var(--ink);cursor:pointer;margin-left:14px;white-space:nowrap}
+.helpbtn:hover{border-color:var(--ink)}
+.helpbtn i{width:20px;height:20px;border-radius:50%;background:var(--lb);color:var(--accent);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:12px}
+dialog.help{margin:0 0 0 auto;height:100dvh;max-height:none;width:min(460px,100vw);border:0;padding:0;background:#fff;box-shadow:-20px 0 60px rgba(20,30,50,.18);color:var(--ink)}
+dialog.help::backdrop{background:rgba(21,23,26,.35)}
+.help-hd{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
+.help-hd h2{margin:0;font-size:20px}
+.help-body{padding:6px 22px 28px}
+.help-body details{border-bottom:1px solid var(--line)}
+.help-body summary{cursor:pointer;font-weight:600;padding:14px 0;list-style:none;position:relative;padding-right:24px}
+.help-body summary::-webkit-details-marker{display:none}
+.help-body summary::after{content:"+";position:absolute;right:2px;top:10px;font-size:20px;font-weight:400;color:var(--muted)}
+.help-body details[open] summary::after{content:"−"}
+.help-body details p{margin:0 0 16px;color:#2f343a;font-size:15px}
+.help-more{color:var(--muted);font-size:14px;margin-top:18px}
+.help-more a{color:var(--accent)}
 .panel h2{font-size:19px;margin:0 0 4px;letter-spacing:-.01em}
 .panel p.hint{margin:0 0 18px;color:var(--muted);font-size:14px}
 .panel h3{font-size:14px;margin:22px 0 10px;color:var(--muted);font-weight:600}
@@ -141,7 +184,8 @@ table.list td.r,table.list td.n{white-space:nowrap;overflow-wrap:normal}
   .sheet{zoom:.7}
 }
 @media (max-width:980px){
-  .work{grid-template-columns:1fr;padding:16px}
+  .work{grid-template-columns:minmax(0,1fr);padding:16px}
+  .work > section{min-width:0}
   .stage{position:static}
   .sheet{zoom:.5}
 }
@@ -149,7 +193,7 @@ table.list td.r,table.list td.n{white-space:nowrap;overflow-wrap:normal}
 @media print{
   @page{size:A4;margin:0}   /* geen marge: dan zet de browser er geen eigen kop/voettekst in */
   body{background:#fff}
-  .app-nav,.mobile-note,.site-foot,.panel,.stage .cap{display:none!important}
+  .app-nav,.mobile-note,.site-foot,.panel,.stack,dialog,.stage .cap{display:none!important}
   .work{display:block;padding:0}
   .stage{position:static}
   .sheet{zoom:1}
@@ -170,44 +214,96 @@ table.list td.r,table.list td.n{white-space:nowrap;overflow-wrap:normal}
     <button role="tab" data-tab="ik">Mijn gegevens</button>
   </nav>
   <span class="local">Alleen in deze browser opgeslagen</span>
+  <button class="helpbtn" type="button" id="help-open"><i>?</i>Hulp</button>
   </div>
 </header>
+
+<dialog class="help" id="help" aria-labelledby="help-title">
+  <div class="help-hd"><h2 id="help-title">Hulp</h2><button class="linkbtn" type="button" id="help-close" aria-label="Hulp sluiten">Sluiten</button></div>
+  <div class="help-body">
+    <details open><summary>Hoe begin ik?</summary><p>Vul eerst bij <b>Mijn gegevens</b> je bedrijfsnaam, adres, KvK nummer, BTW nummer en IBAN in. Voeg daarna een klant toe, bij <b>Klanten</b> of direct bij een nieuwe factuur met <b>+ Nieuwe klant</b>. Dat doe je één keer. Daarna vul je per factuur alleen nog de regels in.</p></details>
+    <details><summary>Hoe maak ik een factuur?</summary><p>Kies bij <b>Nieuwe factuur</b> de klant, vul bij stap 2 wat je factureert in, en klik bij stap 3 op <b>Opslaan en PDF maken</b>. Factuurnummer, BTW, vervaldatum en totaal rekent de tool zelf uit. Rechts zie je meteen hoe de factuur eruitziet.</p></details>
+    <details><summary>Hoe bewaar ik de factuur als PDF?</summary><p>Na het opslaan opent het printvenster van je browser. Kies daar als printer <b>Opslaan als PDF</b>. Zie je bovenaan of onderaan een adres of datum staan? Zet dan bij <b>Meer instellingen</b> het vinkje bij <b>Kop- en voetteksten</b> uit.</p></details>
+    <details><summary>Hoe mail ik de factuur?</summary><p>Ga naar <b>Verstuurd</b>, klik op de factuur en dan op <b>Mail opstellen</b>. Je mailprogramma of Gmail opent met het adres, het onderwerp en de tekst al ingevuld. Sleep de PDF erin en verstuur. Onderwerp, tekst en mailprogramma stel je in bij <b>Mijn gegevens</b>.</p></details>
+    <details><summary>Ik werk met een vast bedrag, geen uren</summary><p>Zet bij een factuurregel <b>Soort</b> op <b>vast</b> en vul alleen het bedrag in. Werk je bij een klant altijd zo, zet dan bij <b>Klanten</b> de werkwijze op <b>Vast bedrag per maand</b>.</p></details>
+    <details><summary>Hoe stel ik het factuurnummer in?</summary><p>Bij <b>Mijn gegevens</b> onder Factuurnummer. Zet <b>Volgende nummer</b> op het nummer na je laatste factuur. Letters en punten mogen in het begin, bijvoorbeeld 2026.A0001.</p></details>
+    <details><summary>Wat is de QR code op de factuur?</summary><p>Je klant scant de code met de bankapp en de overboeking staat klaar, met het bedrag en het factuurnummer. Niet elke bankapp ondersteunt deze code. Je kunt hem uitzetten bij <b>Mijn gegevens</b>.</p></details>
+    <details><summary>Waar staan mijn gegevens?</summary><p>Alleen in de opslag van deze browser, op deze computer. Ze worden nergens naartoe gestuurd. Gebruik je een andere browser of computer, dan begin je daar leeg. Wis je je browsergegevens, dan zijn ze weg.</p></details>
+    <details><summary>Hoe maak ik een back-up?</summary><p>Bij <b>Mijn gegevens</b>, helemaal onderaan: <b>Back-up downloaden</b>. Bewaar het bestand op een veilige plek, bijvoorbeeld in je cloudopslag. Met <b>Back-up terugzetten</b> haal je alles terug, ook op een andere computer.</p></details>
+    <p class="help-more">Staat je vraag er niet bij? Mail naar <a href="mailto:contact@verstuureenfactuur.nl">contact@verstuureenfactuur.nl</a>.</p>
+  </div>
+</dialog>
 <div class="mobile-note" id="mobile-note" hidden><span>Dit werkt het best op een computer. Op een telefoon kan het ook, maar het is minder handig.</span><button type="button" id="mobile-ok">Oké</button></div>
 
 <main class="work">
   <section>
     <!-- Nieuwe factuur -->
-    <div class="panel view" id="v-nieuw">
-      <h2>Nieuwe factuur</h2>
-      <p class="hint">Vul de regels in. Nummer, BTW, vervaldatum en totaal gaan vanzelf.</p>
-      <div class="note" id="firstrun" hidden>Vul eerst je gegevens en een klant in. Daarna staan ze er elke maand al.</div>
-
-      <div class="f">
-        <label for="d-klant">Klant</label>
-        <select id="d-klant"></select>
-      </div>
-      <div class="row">
-        <div class="f"><label for="d-datum">Factuurdatum</label><input id="d-datum" type="date"></div>
-        <div class="f"><label for="d-periode">Periode</label><input id="d-periode" placeholder="oktober 2026"></div>
-      </div>
-      <div class="f"><label for="d-ref">Referentie van de klant</label><input id="d-ref" placeholder="Niet verplicht, bijvoorbeeld een inkoopnummer of projectcode"></div>
-
-      <h3>Regels</h3>
-      <div id="lines"></div>
-      <div class="actions" style="margin-top:4px">
-        <button class="btn small" id="addline">Regel toevoegen</button>
-        <button class="btn small quiet" id="copylast">Regels van vorige factuur overnemen</button>
+    <div class="view stack" id="v-nieuw">
+      <div class="pagehead">
+        <h2>Nieuwe factuur</h2>
+        <p class="hint">Nummer, BTW, vervaldatum en totaal gaan vanzelf.</p>
       </div>
 
-      <h3>Opmerking op de factuur</h3>
-      <textarea id="d-notitie" rows="2" placeholder="Niet verplicht, bijvoorbeeld een korte toelichting"></textarea>
-
-      <div class="sum" id="sum"></div>
-
-      <div class="actions">
-        <button class="btn primary" id="finish">Opslaan en PDF maken</button>
-        <button class="btn quiet" id="reset">Leegmaken</button>
+      <!-- Startlijstje voor nieuwe gebruikers -->
+      <div class="card startlist" id="startlist" hidden>
+        <div class="sl-hd"><b>Zo begin je</b><button class="linkbtn" id="sl-hide" type="button">Verbergen</button></div>
+        <p class="hint">Drie stappen, daarna staat alles klaar voor elke volgende factuur.</p>
+        <ol>
+          <li id="sl-1"><span class="n">1</span><span class="t">Vul je eigen gegevens in</span><button class="btn small" type="button" data-go="ik">Gegevens invullen</button></li>
+          <li id="sl-2"><span class="n">2</span><span class="t">Voeg je eerste klant toe</span><button class="btn small" type="button" id="sl-klant">Klant toevoegen</button></li>
+          <li id="sl-3"><span class="n">3</span><span class="t">Maak je eerste factuur</span></li>
+        </ol>
       </div>
+
+      <section class="card step">
+        <div class="step-hd"><span class="num">1</span><b>Klant</b></div>
+        <div class="f">
+          <label for="d-klant">Klant</label>
+          <div class="klantkeuze"><select id="d-klant"></select><button class="btn small" type="button" id="nk-open">+ Nieuwe klant</button></div>
+        </div>
+        <div class="newk" id="newk" hidden>
+          <div class="f"><label for="nk-naam">Bedrijfsnaam</label><input id="nk-naam" placeholder="Bijvoorbeeld Bakkerij de Boer"></div>
+          <div class="row">
+            <div class="f"><label for="nk-email">E-mail voor facturen</label><input id="nk-email" type="email" placeholder="naam@bedrijf.nl"></div>
+            <div class="f"><label for="nk-tarief">Uurtarief excl. BTW</label><input id="nk-tarief" inputmode="decimal" placeholder="Niet verplicht"></div>
+          </div>
+          <div class="f"><label for="nk-adres">Adres</label><input id="nk-adres" placeholder="Straat en huisnummer"></div>
+          <div class="row">
+            <div class="f"><label for="nk-postcode">Postcode</label><input id="nk-postcode"></div>
+            <div class="f"><label for="nk-plaats">Plaats</label><input id="nk-plaats"></div>
+          </div>
+          <p class="hint" style="margin:0 0 10px">Meer gegevens, zoals een vaste referentie of vast bedrag, vul je later aan bij Klanten.</p>
+          <div class="actions" style="margin-top:0">
+            <button class="btn primary small" type="button" id="nk-save">Klant opslaan</button>
+            <button class="btn quiet small" type="button" id="nk-cancel">Annuleren</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="f"><label for="d-datum">Factuurdatum</label><input id="d-datum" type="date"></div>
+          <div class="f"><label for="d-periode">Periode</label><input id="d-periode" placeholder="oktober 2026"></div>
+        </div>
+        <div class="f" style="margin-bottom:0"><label for="d-ref">Referentie van de klant</label><input id="d-ref" placeholder="Niet verplicht, bijvoorbeeld een inkoopnummer of projectcode"></div>
+      </section>
+
+      <section class="card step">
+        <div class="step-hd"><span class="num">2</span><b>Wat factureer je?</b></div>
+        <div id="lines"></div>
+        <div class="actions" style="margin-top:4px">
+          <button class="btn small" id="addline">Regel toevoegen</button>
+          <button class="btn small quiet" id="copylast">Regels van vorige factuur overnemen</button>
+        </div>
+      </section>
+
+      <section class="card step">
+        <div class="step-hd"><span class="num">3</span><b>Controleren en versturen</b></div>
+        <label for="d-notitie">Opmerking op de factuur</label>
+        <textarea id="d-notitie" rows="2" placeholder="Niet verplicht, bijvoorbeeld een korte toelichting"></textarea>
+        <div class="sum" id="sum"></div>
+        <div class="actions">
+          <button class="btn primary" id="finish">Opslaan en PDF maken</button>
+          <button class="btn quiet" id="reset">Leegmaken</button>
+        </div>
+      </section>
     </div>
 
     <!-- Archief -->
@@ -509,7 +605,17 @@ function renderDraftForm(){
   $('#d-ref').value = S.draft.ref || '';
   $('#d-notitie').value = S.draft.notitie;
   renderLines(); renderSum();
-  $('#firstrun').hidden = !!(S.me.bedrijf && S.klanten.length);
+  renderStartlist();
+  if (!S.klanten.length && !editKlant) $('#newk').hidden = false;   // nog geen klanten: formulier staat meteen open
+}
+// Startlijstje: zichtbaar tot de eerste factuur, of tot iemand het verbergt
+function startHidden(){ try { return localStorage.getItem('start.verborgen') === '1'; } catch(e){ return false; } }
+function renderStartlist(){
+  const meKlaar = !!(S.me.bedrijf && S.me.kvk && S.me.iban);
+  $('#startlist').hidden = S.facturen.length > 0 || startHidden();
+  $('#sl-1').classList.toggle('done', meKlaar);
+  $('#sl-2').classList.toggle('done', S.klanten.length > 0);
+  $('#sl-3').classList.toggle('done', S.facturen.length > 0);
 }
 function renderArchief(){
   const list = [...S.facturen].reverse();
@@ -736,6 +842,34 @@ $('#b-import').onchange = e => {
 // Melding op de telefoon, één keer wegklikken
 try { if (!localStorage.getItem('melding.telefoon')) $('#mobile-note').hidden = false; } catch(e){ $('#mobile-note').hidden = false; }
 $('#mobile-ok').onclick = () => { $('#mobile-note').hidden = true; try { localStorage.setItem('melding.telefoon','1'); } catch(e){} };
+
+/* ===== Nieuwe klant direct bij de factuur ===== */
+const NK = ['naam','email','tarief','adres','postcode','plaats'];
+function openNieuweKlant(){ $('#newk').hidden = false; $('#nk-naam').focus(); }
+$('#nk-open').onclick = () => $('#newk').hidden ? openNieuweKlant() : ($('#newk').hidden = true);
+$('#nk-cancel').onclick = () => { NK.forEach(f => $('#nk-'+f).value = ''); $('#newk').hidden = true; };
+$('#nk-save').onclick = () => {
+  const d = Object.fromEntries(NK.map(f => [f, $('#nk-'+f).value.trim()]));
+  if (!d.naam) { $('#nk-naam').focus(); return alert('Vul de bedrijfsnaam van je klant in.'); }
+  const k = {id:uid(), contact:'', btw:'', ref:'', werkwijze:'uur', ...d};
+  S.klanten.push(k);
+  S.draft.klantId = k.id; S.draft.ref = '';
+  S.draft.regels.forEach(r => { if (r.eenheid === 'uur' && !num(r.prijs)) r.prijs = k.tarief; });
+  NK.forEach(f => $('#nk-'+f).value = '');
+  $('#newk').hidden = true;
+  save(); renderAll();
+};
+
+/* ===== Startlijstje ===== */
+$('#sl-hide').onclick = () => { try { localStorage.setItem('start.verborgen','1'); } catch(e){} $('#startlist').hidden = true; };
+$('#sl-klant').onclick = () => { showTab('nieuw'); openNieuweKlant(); };
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => showTab(b.dataset.go));
+
+/* ===== Hulp ===== */
+const help = $('#help');
+$('#help-open').onclick = () => help.showModal();
+$('#help-close').onclick = () => help.close();
+help.addEventListener('click', e => { if (e.target === help) help.close(); });   // klik naast het paneel sluit het
 
 renderAll();
 </script>
