@@ -51,6 +51,17 @@ button,input,select,textarea{font:inherit;color:inherit}
 .klantkeuze{display:grid;grid-template-columns:1fr auto;gap:8px}
 .newk{border:1.5px dashed #b9c6f5;background:#f7f9ff;border-radius:10px;padding:14px;margin:-2px 0 14px}
 .newk input{background:#fff}
+.req{color:var(--warn);font-weight:700}
+.autosave{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);margin:-8px 0 14px}
+.autosave .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.note.warnnote{background:#fdf1ec;color:#8a2a17}
+input.invalid{border-color:var(--warn);background:#fff8f6}
+.savebar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:6px 0 4px;padding:14px 0 0;border-top:1px solid var(--line)}
+.savebar .hint{margin:0;color:var(--muted);font-size:13px}
+.startlist .miss{display:block;font-size:12px;color:var(--warn);margin-top:1px}
+.startlist .miss:empty{display:none}
+#k-saved{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#k-saved[hidden]{display:none}
 .linkbtn{border:0;background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;padding:4px;text-decoration:underline}
 .linkbtn:hover{color:var(--ink)}
 /* Startlijstje */
@@ -254,7 +265,7 @@ table.list td.r,table.list td.n{white-space:nowrap;overflow-wrap:normal}
         <div class="sl-hd"><b>Zo begin je</b><button class="linkbtn" id="sl-hide" type="button">Verbergen</button></div>
         <p class="hint">Drie stappen, daarna staat alles klaar voor elke volgende factuur.</p>
         <ol>
-          <li id="sl-1"><span class="n">1</span><span class="t">Vul je eigen gegevens in</span><button class="btn small" type="button" data-go="ik">Gegevens invullen</button></li>
+          <li id="sl-1"><span class="n">1</span><span class="t">Vul je eigen gegevens in<small class="miss" id="sl-miss"></small></span><button class="btn small" type="button" data-go="ik">Gegevens invullen</button></li>
           <li id="sl-2"><span class="n">2</span><span class="t">Voeg je eerste klant toe</span><button class="btn small" type="button" id="sl-klant">Klant toevoegen</button></li>
           <li id="sl-3"><span class="n">3</span><span class="t">Maak je eerste factuur</span></li>
         </ol>
@@ -329,6 +340,7 @@ table.list td.r,table.list td.n{white-space:nowrap;overflow-wrap:normal}
     <div class="panel view" id="v-klanten" hidden>
       <h2>Klanten</h2>
       <p class="hint">Eén keer invullen. Werk je per uur, dan staat het tarief al klaar. Bij een vast bedrag vul je elke maand alleen het bedrag in.</p>
+      <div class="note ok" id="k-saved" hidden><span id="k-saved-txt"></span> <button class="btn small primary" type="button" id="k-tofactuur">Naar nieuwe factuur</button></div>
       <div id="klantlist"></div>
       <h3 id="k-kop">Nieuwe klant</h3>
       <form id="klantform" autocomplete="off">
@@ -357,25 +369,31 @@ table.list td.r,table.list td.n{white-space:nowrap;overflow-wrap:normal}
     <!-- Mijn gegevens -->
     <div class="panel view" id="v-ik" hidden>
       <h2>Mijn gegevens</h2>
-      <p class="hint">Staat onderaan en bovenaan elke factuur. Wordt automatisch bewaard.</p>
-      <div class="f"><label for="m-bedrijf">Bedrijfsnaam</label><input id="m-bedrijf" data-me="bedrijf"></div>
+      <p class="hint">Staat bovenaan en onderaan elke factuur. Velden met <span class="req">*</span> zijn verplicht.</p>
+      <p class="autosave"><span class="dot"></span>Wordt automatisch bewaard</p>
+      <div class="note warnnote" id="me-missing" hidden></div>
+      <div class="f"><label for="m-bedrijf">Bedrijfsnaam <span class="req" aria-hidden="true">*</span></label><input id="m-bedrijf" data-me="bedrijf"></div>
       <div class="f"><label for="m-naam">Je naam</label><input id="m-naam" data-me="naam"></div>
-      <div class="f"><label for="m-adres">Adres</label><input id="m-adres" data-me="adres"></div>
+      <div class="f"><label for="m-adres">Adres <span class="req" aria-hidden="true">*</span></label><input id="m-adres" data-me="adres"></div>
       <div class="row">
-        <div class="f"><label for="m-postcode">Postcode</label><input id="m-postcode" data-me="postcode"></div>
-        <div class="f"><label for="m-plaats">Plaats</label><input id="m-plaats" data-me="plaats"></div>
+        <div class="f"><label for="m-postcode">Postcode <span class="req" aria-hidden="true">*</span></label><input id="m-postcode" data-me="postcode"></div>
+        <div class="f"><label for="m-plaats">Plaats <span class="req" aria-hidden="true">*</span></label><input id="m-plaats" data-me="plaats"></div>
       </div>
       <div class="row">
         <div class="f"><label for="m-email">E-mail</label><input id="m-email" data-me="email"></div>
         <div class="f"><label for="m-tel">Telefoon</label><input id="m-tel" data-me="tel"></div>
       </div>
       <div class="row">
-        <div class="f"><label for="m-kvk">KvK nummer</label><input id="m-kvk" data-me="kvk"></div>
+        <div class="f"><label for="m-kvk">KvK nummer <span class="req" aria-hidden="true">*</span></label><input id="m-kvk" data-me="kvk"></div>
         <div class="f"><label for="m-btw">BTW nummer</label><input id="m-btw" data-me="btw" placeholder="NL000000000B01"></div>
       </div>
       <div class="row3">
-        <div class="f"><label for="m-iban">IBAN</label><input id="m-iban" data-me="iban"></div>
+        <div class="f"><label for="m-iban">IBAN <span class="req" aria-hidden="true">*</span></label><input id="m-iban" data-me="iban"></div>
         <div class="f"><label for="m-tnv">T.n.v.</label><input id="m-tnv" data-me="tnv"></div>
+      </div>
+      <div class="savebar">
+        <button class="btn primary" type="button" data-save-me>Opslaan en verder</button>
+        <span class="hint">De instellingen hieronder kun je later nog aanpassen.</span>
       </div>
 
       <h3>Factuurnummer</h3>
@@ -416,6 +434,9 @@ table.list td.r,table.list td.n{white-space:nowrap;overflow-wrap:normal}
       <div class="actions" style="margin-top:0">
         <button class="btn" id="b-export">Back-up downloaden</button>
         <label class="btn" style="margin:0;color:var(--ink)">Back-up terugzetten<input id="b-import" type="file" accept="application/json" hidden></label>
+      </div>
+      <div class="savebar" style="margin-top:26px">
+        <button class="btn primary" type="button" data-save-me>Opslaan en verder</button>
       </div>
     </div>
   </section>
@@ -571,7 +592,7 @@ function renderInvoice(inv){
     <div class="foot">
       <span><b>${esc(me.bedrijf)}</b></span>
       <span>KvK ${ph(me.kvk,'KvK nummer')}</span>
-      <span>BTW ${ph(me.btw,'BTW nummer')}</span>
+      ${me.btw ? `<span>BTW ${esc(me.btw)}</span>` : ''}
       <span>IBAN ${ph(me.iban,'IBAN')}</span>
     </div>
     </div>
@@ -614,9 +635,12 @@ function renderDraftForm(){
   if (!S.klanten.length && !editKlant) $('#newk').hidden = false;   // nog geen klanten: formulier staat meteen open
 }
 // Startlijstje: zichtbaar tot de eerste factuur, of tot iemand het verbergt
+const ME_VERPLICHT = [['bedrijf','bedrijfsnaam'],['adres','adres'],['postcode','postcode'],['plaats','plaats'],['kvk','KvK nummer'],['iban','IBAN']];
+const meOntbreekt = () => ME_VERPLICHT.filter(([f]) => !String(S.me[f]||'').trim());
 function startHidden(){ try { return localStorage.getItem('start.verborgen') === '1'; } catch(e){ return false; } }
 function renderStartlist(){
-  const meKlaar = !!(S.me.bedrijf && S.me.kvk && S.me.iban);
+  const mis = meOntbreekt(), meKlaar = !mis.length;
+  $('#sl-miss').textContent = (!meKlaar && mis.length < ME_VERPLICHT.length) ? 'Nog nodig: ' + mis.map(m => m[1]).join(', ') : '';
   $('#startlist').hidden = S.facturen.length > 0 || startHidden();
   $('#sl-1').classList.toggle('done', meKlaar);
   $('#sl-2').classList.toggle('done', S.klanten.length > 0);
@@ -708,7 +732,6 @@ function missing(inv){
   if (!inv.klant) m.push('een klant');
   if (!S.me.bedrijf) m.push('je bedrijfsnaam');
   if (!S.me.kvk) m.push('je KvK nummer');
-  if (!S.me.btw) m.push('je BTW nummer');
   if (!S.me.iban) m.push('je IBAN');
   if (!inv.regels.some(r => r.oms && qty(r) && num(r.prijs))) m.push('minstens één regel met omschrijving, aantal en bedrag');
   return m;
@@ -797,7 +820,15 @@ $('#klantform').onsubmit = e => {
   const data = Object.fromEntries(KF.map(f => [f, $('#k-'+f).value.trim()]));
   if (editKlant){ Object.assign(klant(editKlant), data); if (S.draft.klantId === editKlant && !S.draft.ref) S.draft.ref = data.ref; }
   else { const k = {id:uid(), ...data}; S.klanten.push(k); if (!S.draft.klantId){ S.draft.klantId = k.id; S.draft.ref = k.ref; S.draft.regels.forEach(r => { if (!r.prijs) r.prijs = k.tarief; }); } }
+  const opgeslagen = editKlant ? klant(editKlant) : S.klanten[S.klanten.length-1];
   editKlant = null; fillKlantForm(null); save(); renderAll();
+  $('#k-saved-txt').textContent = `${opgeslagen.naam} is opgeslagen.`;
+  $('#k-saved').hidden = false; $('#k-tofactuur').dataset.k = opgeslagen.id;
+};
+$('#k-tofactuur').onclick = e => {
+  S.draft.klantId = e.target.dataset.k; S.draft.ref = klant(S.draft.klantId)?.ref || '';
+  S.draft.regels = S.draft.regels.map(r => (r.oms || num(r.aantal)) ? r : blankLine());
+  $('#k-saved').hidden = true; save(); showTab('nieuw');
 };
 $('#k-cancel').onclick = () => { editKlant = null; fillKlantForm(null); renderKlanten(); };
 $('#k-del').onclick = () => {
@@ -864,6 +895,23 @@ $('#nk-save').onclick = () => {
   $('#newk').hidden = true;
   save(); renderAll();
 };
+
+/* ===== Mijn gegevens: opslaan en verder ===== */
+document.querySelectorAll('[data-save-me]').forEach(b => b.onclick = () => {
+  const mis = meOntbreekt();
+  ME_VERPLICHT.forEach(([f]) => $('#m-'+f).classList.toggle('invalid', mis.some(m => m[0] === f)));
+  if (mis.length){
+    const n = $('#me-missing'); n.hidden = false;
+    n.textContent = 'Nog nodig: ' + mis.map(m => m[1]).join(', ') + '.';
+    $('#m-'+mis[0][0]).focus();
+    return;
+  }
+  $('#me-missing').hidden = true;
+  save(); showTab('nieuw'); window.scrollTo({top:0});
+});
+document.querySelectorAll('[data-me]').forEach(el => el.addEventListener('input', () => {
+  if (el.classList.contains('invalid') && el.value.trim()) el.classList.remove('invalid');
+}));
 
 /* ===== Startlijstje ===== */
 $('#sl-hide').onclick = () => { try { localStorage.setItem('start.verborgen','1'); } catch(e){} $('#startlist').hidden = true; };
